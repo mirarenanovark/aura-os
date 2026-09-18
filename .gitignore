@@ -1,0 +1,10 @@
+build/
+*.iso
+*.bin
+*.vmdk
+*.qcow2
+*.o
+*.a
+*.so
+.DS_Store
+*.swp
