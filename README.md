@@ -1,6 +1,13 @@
-# Project Aeris — Ultra-Lightweight Operating System
+# AuraOS — Ultra-Lightweight Operating System
 
-**Project Aeris** is an ultra-lightweight, high-performance desktop operating system built entirely in freestanding C. It features a beautiful Aero Glass/Frost compositor (Windows 7 Aero meets Apple Frost), VirtIO-GPU hardware acceleration, OpenGL & Vulkan support, and a complete built-in developer ecosystem (TinyCC, MicroPython, SDL2, AI Coding Studio).
+**AuraOS** is an ultra-lightweight, high-performance desktop operating system built entirely in freestanding C. It features a beautiful Aero Glass/Frost compositor (Windows 7 Aero meets modern Apple Glass & Cloud), VirtIO-GPU hardware acceleration, OpenGL & Vulkan support, and a complete built-in developer ecosystem (TinyCC, MicroPython, SDL2, AI Coding Studio).
+
+## Engineering Philosophy: Clean. Simple. Small. Fast. Direct.
+- **Clean:** One file, one purpose. Readable in minutes.
+- **Simple:** The direct solution beats clever abstractions every time.
+- **Small:** A complete OS codebase you can read in a weekend.
+- **Fast:** Direct paths, zero indirection, minimal context switches.
+- **Direct:** No AI bloat, no overengineering, no unneeded layers.
 
 ## Key Features
 - **Dual Architecture:** Independent 32-bit (i686) and 64-bit (x86_64) kernel builds
