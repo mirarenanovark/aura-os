@@ -22,11 +22,11 @@ All core system applications use a shared, ultra-low-overhead C UI library:
    * Virtualized grid rendering: can scroll 100,000 rows at 60 FPS while keeping memory pinned to <2MB.
 
 ### B. System Diagnostics & Performance
-4. **Task Manager (`taskmgr`):**
-   * Real-time CPU, RAM, and GPU usage sparkline graphs.
-   * Process tree view (PID, name, memory pages, thread count, priority, kill/suspend controls).
-   * Services and loaded drivers inspection tab.
-5. **BTOP-Style System Monitor (`btop-ui` / `btop`):**
+4. **Ubuntu-Style Task Manager (`taskmgr` / `sysmon`):**
+   * Multi-tab layout (Processes tree, Resources live graphs, File Systems).
+   * Smooth colored history wave graphs for multi-core CPU, RAM allocation, and disk/network I/O.
+   * Direct kernel syscall telemetry with zero allocations per tick: launches in <5ms and uses <1.2MB RAM.
+5. **BTOP-Style Terminal Monitor (`btop`):**
    * Visual terminal/GUI hybrid dashboard with detailed per-core frequency, memory breakdown (kernel, cache, userland), storage I/O meters, and network bandwidth graphs.
 
 ### C. Developer & System Tools
