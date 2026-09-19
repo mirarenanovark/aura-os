@@ -46,6 +46,7 @@ grep -rn "\[AURA_FLOW: HEAP_GROW\]" .
 | `[AURA_COMPONENT: ARCH_PIT_8254]` | Stage 1 | `kernel/arch/x86_shared/pit.c`, `pit.h` | `PRD-07-boot-platform` | `kernel_main`, IDT IRQ0 | `sysmon.c:sysmon_tick` |
 | `[AURA_COMPONENT: BOOT_MULTIBOOT2]` | Stage 1 | `kernel/core/multiboot2.c`, `multiboot2.h`| `PRD-07-boot-platform` | `kernel_main` | PMM RAM map & VGA/GOP linear FB |
 | `[AURA_COMPONENT: CORE_PANIC]` | Stage 2 | `kernel/core/panic.c`, `panic.h` | `PRD-06-verification` | Kernel Assertions | VGA + COM1 halt sequence |
+| `[AURA_COMPONENT: PAGE_FAULT_HANDLER]` | Stage 2 | `kernel/core/pagefault.c`, `pagefault.h` | `PRD-02-capabilities`, `PRD-06-verification` | `kernel_main` | CPU CR2 register |
 | `[AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]` | Stage 2 | `kernel/core/pmm.c`, `pmm.h` | `PRD-05-resources` | `kernel_main`, Heap, VMM | Physical RAM frames (4KB) |
 | `[AURA_COMPONENT: KERNEL_HEAP_FREELIST]` | Stage 3 | `kernel/core/heap.c`, `heap.h` | `PRD-05-resources` | Kernel allocations | `pmm.c:pmm_alloc_contiguous` |
 | `[AURA_COMPONENT: MEMORY_ZRAM_COMPRESSOR]` | Stage 3 | `kernel/core/zram.c`, `zram.h` | `PRD-05-resources` | `kernel_main`, VMM | `heap.c:kmalloc/kfree`, In-RAM pool |
@@ -83,13 +84,14 @@ kernel/main.c              // [AURA_COMPONENT: KERNEL_ORCHESTRATOR]
       ├── [AURA_FLOW: KERNEL_INIT] 3. multiboot2_parse()     ──> [AURA_COMPONENT: BOOT_MULTIBOOT2]
       ├── [AURA_FLOW: KERNEL_INIT] 4. gdt_init()             ──> [AURA_COMPONENT: ARCH_GDT]
       ├── [AURA_FLOW: KERNEL_INIT] 5. isr_install()          ──> [AURA_COMPONENT: ARCH_IDT] (PIC 0x20/0x28)
-      ├── [AURA_FLOW: KERNEL_INIT] 6. pit_init()             ──> [AURA_COMPONENT: ARCH_PIT_8254] (1000Hz)
-      ├── [AURA_FLOW: KERNEL_INIT] 7. pmm_init()             ──> [AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]
-      ├── [AURA_FLOW: KERNEL_INIT] 8. heap_init()            ──> [AURA_COMPONENT: KERNEL_HEAP_FREELIST]
-      ├── [AURA_FLOW: KERNEL_INIT] 9. sysmon_init()          ──> [AURA_COMPONENT: TELEMETRY_SYSMON]
-      ├── [AURA_FLOW: KERNEL_INIT] 10. Enable IRQs ("sti")
-      ├── [AURA_FLOW: KERNEL_INIT] 11. Verify 50ms timer delivery
-      └── [AURA_FLOW: KERNEL_INIT] 12. dashboard_render()    ──> [AURA_COMPONENT: MONITOR_DASHBOARD]
+      ├── [AURA_FLOW: KERNEL_INIT] 6. pagefault_init()       ──> [AURA_COMPONENT: PAGE_FAULT_HANDLER] (Vector 14)
+      ├── [AURA_FLOW: KERNEL_INIT] 7. pit_init()             ──> [AURA_COMPONENT: ARCH_PIT_8254] (1000Hz)
+      ├── [AURA_FLOW: KERNEL_INIT] 8. pmm_init()             ──> [AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]
+      ├── [AURA_FLOW: KERNEL_INIT] 9. heap_init()            ──> [AURA_COMPONENT: KERNEL_HEAP_FREELIST]
+      ├── [AURA_FLOW: KERNEL_INIT] 10. sysmon_init()         ──> [AURA_COMPONENT: TELEMETRY_SYSMON]
+      ├── [AURA_FLOW: KERNEL_INIT] 11. Enable IRQs ("sti")
+      ├── [AURA_FLOW: KERNEL_INIT] 12. Verify 50ms timer delivery
+      └── [AURA_FLOW: KERNEL_INIT] 13. dashboard_render()    ──> [AURA_COMPONENT: MONITOR_DASHBOARD]
             │
             ▼
 kernel/main.c (Idle Loop)

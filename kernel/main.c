@@ -44,6 +44,7 @@
 #include <aura/menu.h>
 #include <aura/keyboard.h>
 #include <aura/panic.h>
+#include <aura/pagefault.h>
 
 static struct aura_boot_info boot_info;
 
@@ -102,6 +103,11 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     isr_install();
     serial_printf(COM1, "[OK] IDT loaded (256 gates, PIC remapped 0x20/0x28)\n");
     vga_printf("[OK] IDT loaded (256 gates, PIC remapped)\n");
+
+    // [AURA_CONNECTS: PAGE_FAULT_HANDLER -> pagefault_init]
+    pagefault_init();
+    serial_printf(COM1, "[OK] Page fault handler installed (vector 14)\n");
+    vga_printf("[OK] Page fault handler installed\n");
 
     // [AURA_FLOW: KERNEL_INIT] Step 6: Initialize Programmable Interval Timer at 1000 Hz
     // [AURA_CONNECTS: ARCH_PIT_8254 -> pit_init]

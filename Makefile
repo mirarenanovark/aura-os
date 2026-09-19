@@ -20,6 +20,7 @@ C_SRCS = kernel/main.c \
          kernel/core/sysmon.c \
          kernel/core/dashboard.c \
          kernel/core/menu.c \
+         kernel/core/pagefault.c \
          kernel/drivers/vga.c \
          kernel/drivers/tui.c \
          kernel/drivers/keyboard.c \

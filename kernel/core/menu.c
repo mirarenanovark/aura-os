@@ -80,6 +80,12 @@ void menu_init(void) {
     log_print("Type 'help' for commands, or 'dashboard' for btop view.");
 }
 
+/* Deliberate page fault trigger for testing */
+__attribute__((noinline)) static void trigger_pf(void) {
+    volatile uint64_t *p = (volatile uint64_t *)0xdead0000;
+    *p = 0xcafebabe;
+}
+
 static void execute_command(const char *cmd) {
     if (cmd[0] == '\0') return;
 
@@ -90,6 +96,7 @@ static void execute_command(const char *cmd) {
         log_print("  clear     - clear output log");
         log_print("  dashboard - switch to full btop TUI dashboard");
         log_print("  panic     - test kernel panic handler");
+        log_print("  pf        - test page fault handler (write to 0xdead0000)");
         log_print("  halt      - halt CPU safely");
     } else if (str_eq(cmd, "info")) {
         log_print("[AuraOS v0.2.3] x86_64 freestanding C kernel");
@@ -165,6 +172,10 @@ static void execute_command(const char *cmd) {
     } else if (str_eq(cmd, "panic")) {
         /* Deliberate test panic */
         __asm__ volatile("ud2");
+    } else if (str_eq(cmd, "pf")) {
+        /* Deliberate page fault: write to non-present page at 0xdead0000 */
+        log_print("Triggering page fault (write to 0xdead0000)...");
+        trigger_pf();
     } else {
         log_print("Unknown command. Type 'help' for list.");
     }

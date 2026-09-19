@@ -2,6 +2,18 @@
 
 All releases, newest first. Module scopes: `boot` `kernel` `drivers` `gui` `libs` `userland` `tools` `tests`. See the [Versioning Protocol](wiki/01-governance/versioning.html) for the rules.
 
+## v0.2.4-pf (2026-09-19) — stage: Page Fault Exception Handler
+Milestone update: Hardware `#PF` vector 14 exception handling, CR2 address decoding, and live interactive recovery.
+### kernel
+- Page fault exception handler (`kernel/core/pagefault.c`, `kernel/include/aura/pagefault.h`) installed via `pagefault_init()`
+- Captures faulting virtual address from `CR2` immediately before nested access
+- Architectural x86 error-code bit decoding (Present=bit0, Write=bit1, User=bit2, Reserved=bit3, Instruction=bit4)
+- Plain-English diagnostic message formatting including hex fault address
+- Interactive crash recovery via `aura_panic_interactive()` (`[R]estore`, `[B]oot`, `[O]ff`)
+- Built-in `pf` shell command in `kernel/core/menu.c` to test `#PF` handling live from the boot screen
+### docs
+- Added `docs/wiki/04-internals/PAGE-FAULT.md` explaining `#PF` execution flow, CR2 mechanics, and bit table in simplest form
+
 ## v0.2.3-menu (2026-09-19) — stage: Interactive Boot Menu & Minimal Command Prompt
 Milestone update: Lightweight boot menu, PS/2 keyboard driver (IRQ1), and interactive command shell.
 ### kernel

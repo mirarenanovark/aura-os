@@ -218,7 +218,12 @@ static const char *exception_messages[32] = {
 void isr_handler(registers_t *regs)
 {
     if (regs->int_no < 32) {
-        const char *reason = (regs->int_no < 32) ? exception_messages[regs->int_no] : "CPU Exception";
+        /* Check if a specialized exception handler is registered */
+        if (interrupt_handlers[regs->int_no]) {
+            interrupt_handlers[regs->int_no](regs);
+            return;
+        }
+        const char *reason = exception_messages[regs->int_no];
         aura_panic_interactive(reason, NULL, 0, regs);
         return;
     }

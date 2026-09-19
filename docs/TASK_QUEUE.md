@@ -42,7 +42,7 @@ Whenever an autonomous subagent is spawned to work on AuraOS:
 | `TASK-MEM-01` | PMM Fast-Path | Replace linear bit scanning with 64-bit word scanning (`__builtin_ctzll` / `tzcnt`) + allocation hint pointer in `pmm.c`. | `PRD-05-resources`, `kernel_optimization_report` | None | `[READY]` | Unassigned |
 | `TASK-MEM-02` | Dynamic Bitmap | Relocate PMM bitmap dynamically to physical memory immediately after kernel `_end` instead of fixed `0x20000`. | `PRD-07-boot`, `ADR-001` | None | `[READY]` | Unassigned |
 | `TASK-MEM-03` | VMM Higher-Half | Implement Higher-Half Direct Map (HHDM) window (`0xFFFF800000000000`) and 2MB huge page folding in `vmm.c`. | `PRD-02-capabilities`, `auraos_memory_blueprint` | `TASK-MEM-01` | `[READY]` | Unassigned |
-| `TASK-MEM-04` | Page Fault ISR | Implement `#PF` (Vector 14) exception handler reading CR2, diagnosing violation code (present, write, user), and panic/recovery. | `PRD-02-capabilities`, `PRD-06-verification` | None | `[READY]` | Unassigned |
+| `TASK-MEM-04` | Page Fault ISR | Implement `#PF` (Vector 14) exception handler reading CR2, diagnosing violation code (present, write, user), and panic/recovery. | `PRD-02-capabilities`, `PRD-06-verification` | None | `[COMPLETED]` | Torve (`trove/mimo-v2.5`) + Mira |
 | `TASK-MEM-05` | Slab Allocator | Implement Darwin-inspired segregated power-of-2 slab zone allocator (`zalloc` 16B..2048B) replacing raw free-list overhead. | `PRD-05-resources`, `auraos_memory_blueprint` | `TASK-MEM-01` | `[READY]` | Unassigned |
 
 ---

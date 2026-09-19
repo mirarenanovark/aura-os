@@ -139,6 +139,8 @@ kernel/main.c (kernel_main)
 | `kernel/core/multiboot2.c` | Stage 1 | `[AURA_COMPONENT: BOOT_MULTIBOOT2]` | Tag-stream parser extracting basic meminfo, physical memory map, and linear GOP framebuffer. |
 | `kernel/include/aura/panic.h` | Stage 2 | `[AURA_COMPONENT: CORE_PANIC]` | Kernel panic macro capturing `__FILE__` and `__LINE__`. |
 | `kernel/core/panic.c` | Stage 2 | `[AURA_COMPONENT: CORE_PANIC]` | Fatal panic handler: logs file/line to VGA and COM1, disables interrupts, halts CPU. |
+| `kernel/include/aura/pagefault.h` | Stage 2 | `[AURA_COMPONENT: PAGE_FAULT_HANDLER]` | x86_64 page fault handler interface (vector 14). |
+| `kernel/core/pagefault.c` | Stage 2 | `[AURA_COMPONENT: PAGE_FAULT_HANDLER]` | Reads CR2, decodes error code bits, builds reason string, triggers interactive panic. |
 | `kernel/include/aura/pmm.h` | Stage 2 | `[AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]` | Physical frame allocator contract: single frame, contiguous DMA frames, memory query API. |
 | `kernel/core/pmm.c` | Stage 2 | `[AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]` | 4KB physical frame bitmap manager (2KB covers 64MB RAM). Contiguous allocator for heap. |
 | `kernel/include/aura/vmm.h` | Stage 3 | `[AURA_COMPONENT: VMM_4LEVEL_PAGING]` | 4-level paging contract: PML4/PDPT/PD/PT walker, PTE flags (PRESENT, WRITABLE, USER, NX). |
@@ -206,6 +208,7 @@ kernel/main.c (kernel_main)
 |-------|----------|
 | Stage 1 Boot Flow | [wiki/04-internals/BOOT-FLOW.md](wiki/04-internals/BOOT-FLOW.md) |
 | Panic Handler | [wiki/04-internals/PANIC-HANDLER.md](wiki/04-internals/PANIC-HANDLER.md) |
+| Page Fault Handler | [wiki/04-internals/PAGE-FAULT.md](wiki/04-internals/PAGE-FAULT.md) |
 
 ---
 
