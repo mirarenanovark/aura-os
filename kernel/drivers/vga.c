@@ -1,3 +1,23 @@
+/**
+ * @file        kernel/drivers/vga.c
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   DRIVER_VGA_CONSOLE
+ * @contract    PRD-07-boot-platform
+ * @description Standard 80x25 text mode driver writing directly to physical 0xB8000.
+ *              Maintains row/col cursor state, handles automatic vertical scrolling,
+ *              tab expansion, newline wraps, and supports integer/string formatting.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main, kernel/core/panic.c, kernel/drivers/tui.c
+ *              - Downstream: MMIO buffer 0xB8000 (VGA text video memory)
+ *              - Hardware:   VGA display controller
+ *
+ * @flow        [AURA_FLOW: VGA_OUTPUT]
+ *              1. vga_init(): Sets default light-grey on black, clears video RAM.
+ *              2. vga_putc(): Writes character + attribute into VGA_MEMORY[row * 80 + col].
+ *              3. vga_scroll(): Shifts lines 1..24 up by one line, blanks bottom row.
+ */
+
 #include <aura/vga.h>
 
 /* Cursor position tracking */

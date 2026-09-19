@@ -1,3 +1,24 @@
+/**
+ * @file        kernel/arch/x86_shared/pit.c
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   ARCH_PIT_8254
+ * @contract    PRD-07-boot-platform
+ * @description Programs the 8254 Programmable Interval Timer (PIT) Channel 0 to
+ *              Mode 3 (square wave) at 1000 Hz (divisor 1193). Handles IRQ0 (Vector 32),
+ *              increments global tick counter, and invokes registered callbacks.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (pit_init), idt.c (IRQ0 dispatch)
+ *              - Downstream: kernel/core/sysmon.c (pit_callback -> sysmon_tick)
+ *              - Hardware:   8254 PIT Ports 0x40, 0x43
+ *
+ * @flow        [AURA_FLOW: TIMER_TICK]
+ *              1. PIT fires IRQ0 on Channel 0 every 1ms.
+ *              2. Handled via isr.S stub -> idt.c irq_handler -> pit_irq_handler.
+ *              3. Increments pit_ticks.
+ *              4. Calls pit_callback() (hooked by sysmon_tick for CPU load sampling).
+ */
+
 #include <aura/pit.h>
 #include <aura/idt.h>
 #include <stdint.h>

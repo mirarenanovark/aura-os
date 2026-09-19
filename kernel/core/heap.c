@@ -1,12 +1,28 @@
-#include <aura/heap.h>
-
-/*
- * AuraOS Free-List Kernel Heap Allocator
- * Clean. Simple. Small. Fast. Direct.
+/**
+ * @file        kernel/core/heap.c
+ * @layer       STAGE_3_VIRTUAL_SCHEDULER
+ * @component   KERNEL_HEAP_FREELIST
+ * @contract    PRD-05-resources-telemetry
+ * @description Boundary-tag free-list kernel dynamic memory allocator.
+ *              Maintains doubly-linked lists for physical adjacency (for coalescing)
+ *              and free blocks (for first-fit search). Dynamically requests additional
+ *              contiguous frames from PMM when exhausted.
  *
- * Block layout in memory:
- * [block_t header] [user payload ...] [block_t header] [user payload ...]
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (heap_init), any caller of kmalloc/kfree
+ *              - Downstream: kernel/core/pmm.c (pmm_alloc_contiguous)
+ *              - Memory:     PMM-allocated physical frames mapped into virtual address space
+ *
+ * @flow        [AURA_FLOW: HEAP_ALLOC]
+ *              1. kmalloc(size): 8-byte aligns size, adds HEADER_SIZE.
+ *              2. Searches free-list for first block with sufficient payload capacity.
+ *              3. If no block found, invokes grow_heap() to allocate contiguous 4KB pages from PMM.
+ *              4. Splits block if remainder exceeds MIN_SPLIT (32 bytes).
+ *              5. Returns payload pointer directly following block_t header.
+ *              6. kfree(ptr): Coalesces with physically adjacent prev/next free blocks to curb fragmentation.
  */
+
+#include <aura/heap.h>
 
 typedef struct block {
     size_t size;            /* Payload size in bytes (excludes header) */

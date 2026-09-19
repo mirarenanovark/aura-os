@@ -1,3 +1,18 @@
+/**
+ * @file        kernel/linker.ld
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   LINKER_SCRIPT
+ * @contract    ADR-001 / PRD-07-boot-platform
+ * @description Defines physical memory image mapping for the 64-bit AuraOS kernel.
+ *              Positions .multiboot at 1MB physical (0x100000), followed by 4KB aligned
+ *              .text, .rodata, .data, and .bss segments.
+ *
+ * @connects
+ *              - Upstream:   Makefile (LD linker stage)
+ *              - Downstream: boot/entry64.S, kernel/main.c
+ *              - Memory:     0x00100000 (1MB) kernel load boundary
+ */
+
 ENTRY(_start)
 
 SECTIONS

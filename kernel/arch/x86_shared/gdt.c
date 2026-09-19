@@ -1,3 +1,24 @@
+/**
+ * @file        kernel/arch/x86_shared/gdt.c
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   ARCH_GDT
+ * @contract    PRD-02-capabilities-protection / PRD-07-boot-platform
+ * @description Installs the flat segmentation model and 64-bit TSS.
+ *              Populates 5 descriptors: Null (0x00), Kernel Code (0x08), Kernel Data (0x10),
+ *              User Code (0x18), User Data (0x20), plus a 16-byte TSS descriptor (0x28).
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (gdt_init)
+ *              - Hardware:   CPU GDTR register, TR (Task Register), CS/DS/SS selectors
+ *
+ * @flow        [AURA_FLOW: GDT_SETUP]
+ *              1. gdt_init(): Configures base/limit and access flags for Ring 0 and Ring 3 gates.
+ *              2. Writes 64-bit TSS descriptor into GDT entries 5 & 6.
+ *              3. Loads GDTR using inline assembly 'lgdt'.
+ *              4. Reloads data segment registers and far-jumps to flush CS.
+ *              5. Loads Task Register using 'ltr'.
+ */
+
 #include <aura/gdt.h>
 #include <stdint.h>
 #include <stddef.h>

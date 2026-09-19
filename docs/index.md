@@ -21,18 +21,18 @@ title: System Architecture & Developer Wiki
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0 32px 0;">
   <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); padding: 16px; border-radius: 8px;">
     <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Current Phase</div>
-    <div style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin: 4px 0;">Phase 1: Boot Bringup</div>
-    <div style="font-size: 0.85rem; color: #cbd5e1;">Limine x86_64 & Serial Console</div>
+    <div style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin: 4px 0;">Phase 1: Boot Bringup & Core</div>
+    <div style="font-size: 0.85rem; color: #cbd5e1;">GRUB2 Multiboot2, PMM, Heap & TUI Dashboard</div>
   </div>
   <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(16, 185, 129, 0.3); padding: 16px; border-radius: 8px;">
     <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Specifications</div>
     <div style="font-size: 1.25rem; font-weight: 800; color: #10b981; margin: 4px 0;">17 / 17 PRDs Complete</div>
-    <div style="font-size: 0.85rem; color: #cbd5e1;">Frozen Wire & Syscall ABIs</div>
+    <div style="font-size: 0.85rem; color: #cbd5e1;">Frozen Wire, ABI & Rulebook</div>
   </div>
   <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); padding: 16px; border-radius: 8px;">
-    <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Architecture Review</div>
-    <div style="font-size: 1.25rem; font-weight: 800; color: #f1f5f9; margin: 4px 0;">Audited by Astra</div>
-    <div style="font-size: 0.85rem; color: #cbd5e1;">Adversarial Red-Team Passed</div>
+    <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Validation Status</div>
+    <div style="font-size: 1.25rem; font-weight: 800; color: #f1f5f9; margin: 4px 0;">QEMU Verified</div>
+    <div style="font-size: 0.85rem; color: #cbd5e1;">PMM & Heap Host Tests Passing</div>
   </div>
 </div>
 
@@ -41,18 +41,25 @@ title: System Architecture & Developer Wiki
 ## 🗺️ 6-Phase Engineering Roadmap
 
 ```
-Phase 1: Bootloader & Platform Bring-Up  [IN PROGRESS]
-  ├── [x] Limine x86_64 boot protocol configuration
-  ├── [x] Higher-half linker script & assembly entry stub
-  ├── [x] UART 16550 serial console logger (COM1)
-  └── [ ] GDT, IDT exception handlers & QEMU automated boot test
+Phase 1: Bootloader & Platform Bring-Up  [COMPLETED]
+  ├── [x] Multiboot2 x86_64 boot protocol & GOP linear framebuffer parser
+  ├── [x] 1MB Kernel linker script & 64-bit transition entry stub
+  ├── [x] UART 16550 serial console logger (COM1 115200 8N1)
+  ├── [x] VGA 80x25 text mode driver & coordinate TUI box engine
+  ├── [x] GDT 5-segment + 64-bit TSS descriptor reload
+  ├── [x] IDT 256 gates & 8259 PIC remapping (0x20/0x28) + 32 CPU ISRs
+  ├── [x] PIT 8254 timer (1000Hz heartbeat) & 50ms verification
+  ├── [x] Physical Memory Manager (PMM 4KB bitmap frame allocator)
+  ├── [x] Dynamic Kernel Heap (Free-list kmalloc/kfree with auto PMM expansion)
+  └── [x] Real-time telemetry monitor (sysmon) & btop-style dashboard
         │
         ▼
-Phase 2: Memory, Interrupts & Capability Handles
-  ├── [ ] Physical Page Bitmap Allocator (PMM)
-  ├── [ ] 4-Level PML4 Virtual Memory Paging (VMM)
+Phase 2: Virtual Memory, Process Scheduler & Capabilities  [IN PROGRESS]
+  ├── [x] 4-Level PML4 Virtual Memory Paging walker (vmm.c)
+  ├── [ ] Higher-Half Direct Map (HHDM) & 2MB huge page folding
+  ├── [ ] Darwin-inspired memory compaction (WKdm compressor)
   ├── [ ] Per-process Capability Object Table (aura_handle_t)
-  └── [ ] Round-robin preemptive scheduler & Ring-3 user mode
+  └── [ ] Round-robin preemptive scheduler & Ring-3 user mode transition
         │
         ▼
 Phase 3: Filesystem, Initramfs & In-OS TCC Compiler

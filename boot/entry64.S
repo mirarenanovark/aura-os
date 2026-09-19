@@ -1,7 +1,25 @@
-/* Entry point for AuraOS x86_64
- * Multiboot2 enters in 32-bit protected mode (EAX=0x36d76289, EBX=multiboot_info).
- * _start sets up 64-bit long mode with identity paging, loads 64-bit GDT, jumps to long mode,
- * and calls kernel_main.
+/**
+ * @file        boot/entry64.S
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   BOOT_ENTRY64
+ * @contract    PRD-07-boot-platform / ADR-001
+ * @description 32-bit Multiboot2 kernel entry point. Validates CPU long mode support,
+ *              constructs initial 1GB 2MB huge identity paging, transitions CPU into
+ *              64-bit Long Mode, and hands off execution to kernel_main().
+ *
+ * @connects
+ *              - Upstream:   boot/multiboot2_header.S -> GRUB2 / Limine
+ *              - Downstream: kernel/main.c (kernel_main)
+ *              - Hardware:   CPU CR0, CR3, CR4, EFER MSR (0xC0000080), CPUID
+ *
+ * @flow        [AURA_FLOW: BOOT_ENTRY]
+ *              1. Save Multiboot2 magic (EAX) and MBI pointer (EBX).
+ *              2. Verify CPUID availability and Long Mode support (EDX bit 29).
+ *              3. Clear and construct 1GB 2MB-huge page identity map (PML4->PDPT->PD).
+ *              4. Load PML4 base into CR3, enable PAE (CR4.PAE), enable LME in EFER MSR.
+ *              5. Enable Paging & Protected Mode (CR0.PG | CR0.PE).
+ *              6. Load temporary 64-bit boot GDT, perform far jump to long_mode_start.
+ *              7. Reload segment selectors (0x10), setup 16KB stack, pass args to kernel_main().
  */
 
 .code32
@@ -9,6 +27,7 @@
 .global _start
 
 _start:
+    // [AURA_FLOW: BOOT_ENTRY] Step 1: Initialize CPU flags & save bootloader registers
     cli
     cld
 
@@ -48,7 +67,7 @@ _start:
     testl $(1 << 29), %edx
     jz .no_long_mode
 
-    /* Set up identity paging for first 1GB using 2MB huge pages */
+    // [AURA_FLOW: BOOT_ENTRY] Step 2: Build 1GB 2MB huge identity paging (PML4, PDPT, PD)
     /* Clear page tables (4KB each for PML4, PDPT, PD) */
     movl $boot_pml4, %edi
     movl $0, %eax
@@ -76,6 +95,7 @@ _start:
     cmpl $512, %ecx
     jne .fill_pd
 
+    // [AURA_FLOW: BOOT_ENTRY] Step 3: Enable CR4.PAE, EFER.LME, CR0.PG and load CR3
     /* Load PML4 address into CR3 */
     movl $boot_pml4, %eax
     movl %eax, %cr3
@@ -96,6 +116,7 @@ _start:
     orl $((1 << 31) | (1 << 0)), %eax
     movl %eax, %cr0
 
+    // [AURA_FLOW: BOOT_ENTRY] Step 4: Load 64-bit GDT & far jump to 64-bit Long Mode
     /* Load 64-bit GDT */
     lgdt (boot_gdt64_ptr)
 
@@ -111,6 +132,7 @@ _start:
 
 .code64
 long_mode_start:
+    // [AURA_FLOW: BOOT_ENTRY] Step 5: Transition into Long Mode, reload segments & jump to kernel_main
     /* Reload data segment registers */
     movw $0x10, %ax
     movw %ax, %ds
@@ -129,6 +151,7 @@ long_mode_start:
     movl (multiboot_info), %edi
     movl (multiboot_magic), %esi
 
+    // [AURA_CONNECTS: KERNEL_ORCHESTRATOR -> kernel_main]
     call kernel_main
 
     /* If kernel_main returns, halt */

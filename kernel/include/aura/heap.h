@@ -1,3 +1,16 @@
+/**
+ * @file        kernel/include/aura/heap.h
+ * @layer       STAGE_3_VIRTUAL_SCHEDULER
+ * @component   KERNEL_HEAP_FREELIST
+ * @contract    PRD-05-resources-telemetry
+ * @description Dynamic kernel heap memory allocator interface.
+ *              Provides kmalloc, kmalloc_aligned, kfree, krealloc, and usage queries.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel drivers and subsystems
+ *              - Downstream: kernel/core/heap.c, kernel/core/pmm.c
+ */
+
 #ifndef AURA_HEAP_H
 #define AURA_HEAP_H
 

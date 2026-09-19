@@ -1,3 +1,17 @@
+/**
+ * @file        kernel/include/aura/pmm.h
+ * @layer       STAGE_2_PHYSICAL_FAULT
+ * @component   PMM_BITMAP_ALLOCATOR
+ * @contract    PRD-05-resources-telemetry
+ * @description Physical Memory Manager (PMM) contract: 4KB frame tracking,
+ *              single frame allocation, contiguous DMA blocks, and memory queries.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel/core/heap.c, kernel/arch/x86_64/vmm.c
+ *              - Downstream: kernel/core/pmm.c
+ *              - Hardware:   Physical RAM frames (0x00000000 .. MAX_PHYSICAL_RAM)
+ */
+
 #ifndef AURA_PMM_H
 #define AURA_PMM_H
 

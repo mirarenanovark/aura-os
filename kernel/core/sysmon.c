@@ -1,3 +1,25 @@
+/**
+ * @file        kernel/core/sysmon.c
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   TELEMETRY_SYSMON
+ * @contract    TEL-001-telemetry / PRD-05-resources-telemetry
+ * @description System Telemetry and CPU load sampler.
+ *              Hooks into the PIT 1000Hz timer callback. Measures the proportion of ticks
+ *              where the CPU was in the idle loop ('hlt') vs executing code over a 1000-tick
+ *              (1-second) rolling window to calculate exact CPU load percentage.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (sysmon_init, sysmon_set_idle)
+ *              - Downstream: kernel/arch/x86_shared/pit.c (pit_set_callback), kernel/core/dashboard.c
+ *              - Hardware:   Driven by PIT IRQ0 interrupt cadence
+ *
+ * @flow        [AURA_FLOW: TELEMETRY_SAMPLE]
+ *              1. Every 1ms, PIT interrupt executes sysmon_tick().
+ *              2. If CPU was idle prior to interrupt, increments window_idle and idle_ticks.
+ *              3. At window limit (1000 ticks), latches load percentages and resets accumulator.
+ *              4. sysmon_get_stats(): Returns uptime, CPU load %, RAM used/total to callers.
+ */
+
 #include <aura/sysmon.h>
 #include <aura/pit.h>
 #include <aura/pmm.h>

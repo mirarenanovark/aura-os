@@ -1,3 +1,25 @@
+/**
+ * @file        kernel/arch/x86_64/vmm.c
+ * @layer       STAGE_3_VIRTUAL_SCHEDULER
+ * @component   VMM_4LEVEL_PAGING
+ * @contract    PRD-02-capabilities-protection
+ * @description Virtual Memory Manager implementation for x86_64 Long Mode.
+ *              Walks the 4-level page table hierarchy (PML4 -> PDPT -> PD -> PT),
+ *              dynamically allocating missing table levels on demand via PMM.
+ *              Handles address translations, page mappings/unmappings, and TLB invalidation.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, future userland process loaders
+ *              - Downstream: kernel/core/pmm.c (pmm_alloc_frame, pmm_free_frame)
+ *              - Hardware:   CPU CR3 register, invlpg instruction
+ *
+ * @flow        [AURA_FLOW: VMM_PAGE_MAP]
+ *              1. Extracts 9-bit indices for PML4, PDPT, PD, and PT.
+ *              2. If intermediate table absent, allocates 4KB frame from PMM.
+ *              3. Writes PTE with target physical address and permission flags.
+ *              4. Flushes translation cache via invlpg.
+ */
+
 #include <aura/vmm.h>
 #include <aura/pmm.h>
 

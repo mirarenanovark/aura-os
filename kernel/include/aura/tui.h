@@ -1,3 +1,18 @@
+/**
+ * @file        kernel/include/aura/tui.h
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   DRIVER_TUI_ENGINE
+ * @contract    PRD-11-desktop-compositor
+ * @description Text User Interface (TUI) primitive rendering engine.
+ *              CP437 single/double box drawing, horizontal progress gauges,
+ *              header/footer banners, and absolute coordinate character/string drawing.
+ *
+ * @connects
+ *              - Upstream:   kernel/core/dashboard.c
+ *              - Downstream: kernel/drivers/tui.c, kernel/drivers/vga.c
+ *              - Hardware:   VGA memory mapped I/O (0xB8000)
+ */
+
 #ifndef AURA_TUI_H
 #define AURA_TUI_H
 

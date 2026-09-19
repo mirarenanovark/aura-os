@@ -1,3 +1,26 @@
+/**
+ * @file        kernel/core/dashboard.c
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   MONITOR_DASHBOARD
+ * @contract    TEL-001-telemetry / PRD-11-desktop-compositor
+ * @description Renders a live btop/htop-inspired system monitor on the 80x25 VGA display.
+ *              Divides screen into a top header, split CPU metrics box, RAM & Heap
+ *              memory gauges, process execution table, and bottom hotkey bar.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (dashboard_init, dashboard_render)
+ *              - Downstream: kernel/drivers/tui.c, kernel/drivers/vga.c, kernel/core/sysmon.c,
+ *                            kernel/core/pmm.c, kernel/core/heap.c
+ *              - Hardware:   Draws directly into VGA MMIO via TUI library
+ *
+ * @flow        [AURA_FLOW: DASHBOARD_DRAW]
+ *              1. tui_draw_header(): Renders blue inverted top status bar with uptime.
+ *              2. draw_cpu_box(): Draws single-border box, queries sysmon for CPU load %, renders gauge.
+ *              3. draw_mem_box(): Queries PMM for physical RAM usage and Heap for dynamic memory, renders bars.
+ *              4. draw_proc_box(): Renders PID table with process states, CPU %, and memory footprint.
+ *              5. tui_draw_footer(): Renders bottom hotkey reminder bar.
+ */
+
 #include <aura/dashboard.h>
 #include <aura/tui.h>
 #include <aura/vga.h>

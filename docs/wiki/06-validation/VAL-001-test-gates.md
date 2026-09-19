@@ -26,3 +26,6 @@ Every pull request or milestone commit must pass all gates before merge.
 | Date | Commit Hash | Target Arch | Verified Deliverable | Status | Tester |
 |---|---|---|---|---|---|
 | 2026-09-18 | `d8861bc` | Spec/Docs | Complete PRD & Wiki architecture | PASS | Astra + GLM Pro |
+| 2026-09-19 | `473f848` | x86_64 | Phase 1 GRUB2 boot, GDT, IDT, PIT, PMM, Serial | PASS | Antigravity QA |
+| 2026-09-19 | `714392b` | x86_64 | Dynamic Heap Allocator (`kmalloc`/`kfree`) & tests | PASS | Antigravity QA |
+| 2026-09-19 | `9154a32` | x86_64 | VGA Text Console & TUI Sysmon Dashboard | PASS | Antigravity QA |

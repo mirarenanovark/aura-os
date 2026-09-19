@@ -1,3 +1,16 @@
+/**
+ * @file        kernel/include/aura/multiboot2.h
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   BOOT_MULTIBOOT2
+ * @contract    PRD-07-boot-platform / Multiboot2 Specification
+ * @description Multiboot2 tag structures, memory type enumerations,
+ *              linear GOP framebuffer structure, and parse prototype.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel/core/multiboot2.c
+ *              - Bootloader: GRUB2 / Limine tag stream
+ */
+
 #ifndef AURA_MULTIBOOT2_H
 #define AURA_MULTIBOOT2_H
 

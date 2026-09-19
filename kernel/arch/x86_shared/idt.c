@@ -1,3 +1,25 @@
+/**
+ * @file        kernel/arch/x86_shared/idt.c
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   ARCH_IDT
+ * @contract    PRD-07-boot-platform
+ * @description Configures the 256-gate Interrupt Descriptor Table (IDT),
+ *              remaps the dual 8259 PIC (Master: 0x20, Slave: 0x28) to avoid
+ *              CPU exception conflicts, and installs exception/IRQ dispatchers.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (isr_install)
+ *              - Downstream: kernel/arch/x86_shared/isr.S, pit.c, serial.c
+ *              - Hardware:   CPU IDTR register, Master PIC (0x20/0x21), Slave PIC (0xA0/0xA1)
+ *
+ * @flow        [AURA_FLOW: IDT_SETUP]
+ *              1. isr_install(): Remaps PIC vectors 0-15 to 32-47 via ICW1-ICW4.
+ *              2. Populates 32 CPU exception gates with isr0..isr31 stubs.
+ *              3. Populates 16 hardware IRQ gates with irq0..irq15 stubs.
+ *              4. Loads IDTR using inline assembly 'lidt'.
+ *              5. isr_handler() / irq_handler(): Dispatches to C callbacks and sends EOI.
+ */
+
 #include <aura/idt.h>
 #include <aura/gdt.h>
 #include <aura/serial.h>

@@ -1,3 +1,24 @@
+/**
+ * @file        kernel/drivers/tui.c
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   DRIVER_TUI_ENGINE
+ * @contract    PRD-11-desktop-compositor
+ * @description Coordinate-based text user interface (TUI) renderer.
+ *              Directly addresses VGA 80x25 cells without allocations.
+ *              Draws styled single/double border boxes with headers, horizontal
+ *              proportional gauges (CP437 shade characters), and formatted text.
+ *
+ * @connects
+ *              - Upstream:   kernel/core/dashboard.c:dashboard_render
+ *              - Downstream: kernel/include/aura/vga.h (VGA_MEMORY)
+ *              - Hardware:   VGA memory mapped I/O (0xB8000)
+ *
+ * @flow        [AURA_FLOW: TUI_RENDER]
+ *              1. tui_putc_at(): Bounds-checks (x, y), writes ASCII + color into VGA memory.
+ *              2. tui_draw_box(): Paints corners, horizontal spans, vertical spans, and centered titles.
+ *              3. tui_draw_bar(): Computes fractional bar length and renders full/shade blocks.
+ */
+
 #include <aura/tui.h>
 #include <aura/vga.h>
 #include <stdarg.h>

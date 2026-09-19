@@ -76,13 +76,19 @@ boot/multiboot2_header.S ──> boot/entry64.S (_start)
                                  v
 kernel/main.c (kernel_main)
        |
-       |-> serial_init()   [kernel/arch/x86_shared/serial.c] : COM1 UART 115200 8N1
-       |-> gdt_init()      [kernel/arch/x86_shared/gdt.c]    : 5 segments + TSS (0x08,0x10,0x18,0x20,0x28)
-       |-> isr_install()   [kernel/arch/x86_shared/idt.c]    : PIC remap (0x20/0x28) + 256 gates (isr.S)
-       |-> pit_init()      [kernel/arch/x86_shared/pit.c]    : PIT 1000Hz (mode 3, divisor 1193)
-       |-> pmm_init()      [kernel/core/pmm.c]               : 64MB bitmap frame allocator
-       |-> sti             (Enable CPU interrupts)
-       '-> Main idle loop  (hlt wait for interrupts)
+       |-> vga_init()         [kernel/drivers/vga.c]           : 80x25 Text console (0xB8000)
+       |-> serial_init()      [kernel/arch/x86_shared/serial.c]: COM1 UART 115200 8N1
+       |-> multiboot2_parse() [kernel/core/multiboot2.c]       : Parse RAM map & linear GOP framebuffer
+       |-> gdt_init()         [kernel/arch/x86_shared/gdt.c]   : 5 segments + TSS (0x08,0x10,0x18,0x20,0x28)
+       |-> isr_install()      [kernel/arch/x86_shared/idt.c]   : PIC remap (0x20/0x28) + 256 gates (isr.S)
+       |-> pit_init()         [kernel/arch/x86_shared/pit.c]   : PIT 1000Hz (mode 3, divisor 1193)
+       |-> pmm_init()         [kernel/core/pmm.c]              : Dynamic bitmap frame allocator
+       |-> heap_init()        [kernel/core/heap.c]             : Free-list kernel heap
+       |-> sysmon_init()      [kernel/core/sysmon.c]           : Telemetry engine hooked to PIT
+       |-> sti                (Enable CPU interrupts)
+       |-> Verify Timer       (Awaits 50 ticks ~ 50ms)
+       |-> dashboard_render() [kernel/core/dashboard.c]        : Renders btop-style monitoring UI
+       '-> Main idle loop     (hlt wait for interrupts, sysmon_set_idle)
 ```
 
 ---
@@ -115,26 +121,43 @@ kernel/main.c (kernel_main)
 
 ## 4. Component File Map
 
-| File | Purpose |
-|------|---------|
-| `boot/multiboot2_header.S` | 8-byte aligned Multiboot2 header (magic `0xE85250D6`, arch 0, end tag) in `.multiboot`. |
-| `boot/entry64.S` | 32-bit kernel entry `_start`, checks Long Mode support, sets up 1GB boot identity paging, jumps to 64-bit long mode, calls `kernel_main`. |
-| `kernel/include/aura/gdt.h` | GDT descriptor structures, segment selector constants, 64-bit TSS definition. |
-| `kernel/arch/x86_shared/gdt.c` | Installs 5-entry GDT + TSS and reloads segment registers via inline assembly. |
-| `kernel/include/aura/idt.h` | IDT gate entry structures, interrupt frame registers, registration API. |
-| `kernel/arch/x86_shared/isr.S` | Low-level assembly stubs for 32 CPU exceptions (with dummy error codes) and 16 PIC IRQs. Saves register state, dispatches to C. |
-| `kernel/arch/x86_shared/idt.c` | Remaps 8259 PIC (Master: 0x20, Slave: 0x28), sets up 256 IDT gates, loads IDTR via `lidt`. |
-| `kernel/include/aura/pit.h` | 1000Hz PIT driver definitions, tick count and callback API. |
-| `kernel/arch/x86_shared/pit.c` | Programs 8254 PIT channel 0 to mode 3 square wave with divisor 1193, handles IRQ0 ticks. |
-| `kernel/include/aura/pmm.h` | Physical frame allocator contract: alloc, free, contiguous DMA, stats. |
-| `kernel/core/pmm.c` | Bitmap frame allocator: 1 bit per 4KB frame; 64MB managed in 2KB of bitmap. |
-| `kernel/include/aura/vmm.h` | 4-level paging contract: PTE flags (PRESENT, WRITABLE, USER, PAT-WC, NX), map/unmap/translate API. |
-| `kernel/arch/x86_64/vmm.c` | Page table walker: auto-allocates PDPT/PD/PT levels on demand via PMM; CR3 switch + invlpg. |
-| `kernel/main.c` | Kernel main initialization orchestrating serial, GDT, IDT, PIT, PMM, and timer interrupt verification. |
-| `kernel/linker.ld` | Positions `.multiboot` at 1MB physical, then `.text`, `.rodata`, `.data`, `.bss`. |
-| `boot/iso/boot/grub/grub.cfg` | GRUB2 config loading `/boot/auraos.elf`, zero timeout. |
-| `Makefile` | Builds ELF kernel, creates bootable GRUB ISO, runs QEMU, runs host PMM unit tests. |
-| `tests/test_pmm.c` | Host unit test simulating 64MB RAM; validates alloc/free/reuse/contiguous allocation. |
+| File | Layer | Tag Component | Purpose & Contract |
+|------|-------|---------------|---------------------|
+| `boot/multiboot2_header.S` | Stage 1 | `[AURA_COMPONENT: BOOT_MB2_HEADER]` | 8-byte aligned Multiboot2 header (`0xE85250D6`), architecture 0 (i386 32-bit), ends tag. |
+| `boot/entry64.S` | Stage 1 | `[AURA_COMPONENT: BOOT_ENTRY64]` | Protected-mode entry `_start`, CPUID long-mode check, 1GB huge identity paging, jump to 64-bit `kernel_main`. |
+| `kernel/linker.ld` | Stage 1 | `[AURA_COMPONENT: LINKER_SCRIPT]` | Kernel layout positioning `.multiboot` at physical 1MB, `.text`, `.rodata`, `.data`, `.bss`. |
+| `kernel/include/aura/serial.h` | Stage 1 | `[AURA_COMPONENT: SERIAL_UART16550]` | Polled COM1 16550 UART driver interface at port 0x3F8, `serial_printf`. |
+| `kernel/arch/x86_shared/serial.c` | Stage 1 | `[AURA_COMPONENT: SERIAL_UART16550]` | 16550 UART driver: FIFO 14-byte trigger, 8N1 latching via DLAB, synchronous write. |
+| `kernel/include/aura/gdt.h` | Stage 1 | `[AURA_COMPONENT: ARCH_GDT]` | GDT descriptor structures, selector constants (0x08, 0x10, 0x18, 0x20, 0x28), 64-bit TSS definition. |
+| `kernel/arch/x86_shared/gdt.c` | Stage 1 | `[AURA_COMPONENT: ARCH_GDT]` | Installs 5-entry GDT + 16-byte TSS descriptor and reloads segment registers. |
+| `kernel/include/aura/idt.h` | Stage 1 | `[AURA_COMPONENT: ARCH_IDT]` | IDT gate entry structures, interrupt frame `registers_t`, handler registration API. |
+| `kernel/arch/x86_shared/idt.c` | Stage 1 | `[AURA_COMPONENT: ARCH_IDT]` | Remaps 8259 PIC (Master: 0x20, Slave: 0x28), populates 256 gates, loads IDTR via `lidt`. |
+| `kernel/arch/x86_shared/isr.S` | Stage 1 | `[AURA_COMPONENT: ARCH_ISR_STUBS]` | Low-level x86_64 ISR stubs for 32 exceptions + 16 PIC IRQs. Pushes register frame, calls C dispatcher. |
+| `kernel/include/aura/pit.h` | Stage 1 | `[AURA_COMPONENT: ARCH_PIT_8254]` | 1000Hz PIT definitions, tick count accumulator, callback hook. |
+| `kernel/arch/x86_shared/pit.c` | Stage 1 | `[AURA_COMPONENT: ARCH_PIT_8254]` | Programs 8254 PIT channel 0 to mode 3 (divisor 1193), dispatches IRQ0 to `pit_callback`. |
+| `kernel/include/aura/multiboot2.h` | Stage 1 | `[AURA_COMPONENT: BOOT_MULTIBOOT2]` | Multiboot2 tag definitions, memory map structures, GOP framebuffer info struct. |
+| `kernel/core/multiboot2.c` | Stage 1 | `[AURA_COMPONENT: BOOT_MULTIBOOT2]` | Tag-stream parser extracting basic meminfo, physical memory map, and linear GOP framebuffer. |
+| `kernel/include/aura/panic.h` | Stage 2 | `[AURA_COMPONENT: CORE_PANIC]` | Kernel panic macro capturing `__FILE__` and `__LINE__`. |
+| `kernel/core/panic.c` | Stage 2 | `[AURA_COMPONENT: CORE_PANIC]` | Fatal panic handler: logs file/line to VGA and COM1, disables interrupts, halts CPU. |
+| `kernel/include/aura/pmm.h` | Stage 2 | `[AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]` | Physical frame allocator contract: single frame, contiguous DMA frames, memory query API. |
+| `kernel/core/pmm.c` | Stage 2 | `[AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]` | 4KB physical frame bitmap manager (2KB covers 64MB RAM). Contiguous allocator for heap. |
+| `kernel/include/aura/vmm.h` | Stage 3 | `[AURA_COMPONENT: VMM_4LEVEL_PAGING]` | 4-level paging contract: PML4/PDPT/PD/PT walker, PTE flags (PRESENT, WRITABLE, USER, NX). |
+| `kernel/arch/x86_64/vmm.c` | Stage 3 | `[AURA_COMPONENT: VMM_4LEVEL_PAGING]` | Auto-allocates page table levels on demand via PMM; page mapping, unmapping, CR3 reload, invlpg. |
+| `kernel/include/aura/heap.h` | Stage 3 | `[AURA_COMPONENT: KERNEL_HEAP_FREELIST]` | Kernel dynamic heap allocator contract (`kmalloc`, `kfree`, `kcalloc`, `krealloc`). |
+| `kernel/core/heap.c` | Stage 3 | `[AURA_COMPONENT: KERNEL_HEAP_FREELIST]` | First-fit free-list allocator with block splitting, coalescing, and automatic expansion via `pmm_alloc_contiguous`. |
+| `kernel/include/aura/vga.h` | Stage 4 | `[AURA_COMPONENT: DRIVER_VGA_CONSOLE]` | 80x25 text mode driver at MMIO 0xB8000, 16-color attributes, formatted printing. |
+| `kernel/drivers/vga.c` | Stage 4 | `[AURA_COMPONENT: DRIVER_VGA_CONSOLE]` | VGA text console: scrolling, line wrapping, cursor tracking, color formatting. |
+| `kernel/include/aura/tui.h` | Stage 4 | `[AURA_COMPONENT: DRIVER_TUI_ENGINE]` | Text user interface primitives: coordinate printing, ASCII single/double boxes, progress bars. |
+| `kernel/drivers/tui.c` | Stage 4 | `[AURA_COMPONENT: DRIVER_TUI_ENGINE]` | Direct VGA frame drawing engine: `tui_draw_box`, `tui_draw_bar`, string and integer formatting. |
+| `kernel/include/aura/sysmon.h` | Stage 4 | `[AURA_COMPONENT: TELEMETRY_SYSMON]` | System telemetry monitor contract: CPU load %, memory statistics, rolling window metrics. |
+| `kernel/core/sysmon.c` | Stage 4 | `[AURA_COMPONENT: TELEMETRY_SYSMON]` | PIT 1000Hz callback hook: tracks idle ticks vs busy ticks across 1-second rolling window. |
+| `kernel/include/aura/dashboard.h`| Stage 4 | `[AURA_COMPONENT: MONITOR_DASHBOARD]` | System status dashboard contract (`dashboard_init`, `dashboard_render`). |
+| `kernel/core/dashboard.c` | Stage 4 | `[AURA_COMPONENT: MONITOR_DASHBOARD]` | btop-style monitoring dashboard: CPU usage box, RAM & Heap gauges, simulated process table. |
+| `kernel/main.c` | All | `[AURA_COMPONENT: KERNEL_ORCHESTRATOR]` | Kernel entry point coordinating VGA, Serial, Multiboot2, GDT, IDT, PIT, PMM, Heap, Sysmon, and Dashboard. |
+| `boot/iso/boot/grub/grub.cfg` | Stage 1 | - | GRUB2 configuration loading `/boot/auraos.elf` with timeout 0. |
+| `Makefile` | Build | - | Builds ELF kernel, bootable ISO via `grub-mkrescue`, runs QEMU, runs host tests. |
+| `tests/test_pmm.c` | Test | `GATE-02` | Host unit test validating PMM alloc/free/reuse and contiguous allocation. |
+| `tests/test_heap.c` | Test | `GATE-02` | Host unit test validating heap `kmalloc`/`kfree`, boundary splits, coalescing, stress test. |
 
 ---
 

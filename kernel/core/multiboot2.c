@@ -1,3 +1,24 @@
+/**
+ * @file        kernel/core/multiboot2.c
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   BOOT_MULTIBOOT2
+ * @contract    PRD-07-boot-platform / Multiboot2 Specification
+ * @description Parses the 8-byte aligned Multiboot2 tag stream passed by GRUB2.
+ *              Extracts lower/upper basic memory limits, parses physical memory map
+ *              (MULTIBOOT_MEMORY_AVAILABLE), and retrieves linear GOP framebuffer tags.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (multiboot2_parse)
+ *              - Downstream: kernel/core/pmm.c (ram_size sizing)
+ *              - Bootloader: mbi_addr pointer passed in EBX by bootloader
+ *
+ * @flow        [AURA_FLOW: BOOT_PARSING]
+ *              1. Validates magic (0x36d76289).
+ *              2. Iterates 8-byte aligned tags until MULTIBOOT_TAG_TYPE_END (0).
+ *              3. Parses TYPE_BASIC_MEMINFO and TYPE_MMAP to populate RAM metrics.
+ *              4. Parses TYPE_FRAMEBUFFER for linear GOP dimensions, pitch, and bpp.
+ */
+
 #include <aura/multiboot2.h>
 #include <aura/serial.h>
 

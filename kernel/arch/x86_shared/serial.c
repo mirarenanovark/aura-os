@@ -1,8 +1,22 @@
-/*
- * AuraOS - 16550 UART serial driver (x86: i686 + x86_64 share this file).
+/**
+ * @file        kernel/arch/x86_shared/serial.c
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   SERIAL_UART16550
+ * @contract    PRD-07-boot-platform
+ * @description 16550 UART serial driver for x86 architectures (i686 & x86_64).
+ *              Operates purely via port I/O polling (no IRQ, no DMA).
+ *              Configures 8N1 framing, enables 14-byte FIFO trigger, and sets
+ *              divisor latch via DLAB. Formats output for remote diagnostics.
  *
- * Freestanding, no stdlib. Polling only: no interrupts, no DMA.
- * 8N1 framing, FIFO enabled, divisor latched via DLAB.
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main, kernel/core/panic.c
+ *              - Downstream: x86 I/O bus via inline inb/outb assembly
+ *              - Hardware:   COM1 base port 0x3F8, COM2 0x2F8
+ *
+ * @flow        [AURA_FLOW: SERIAL_IO]
+ *              1. serial_init(): Disables UART IRQ, latches DLAB, programs baud divisor.
+ *              2. serial_putc(): Polls LSR bit 5 (THRE) until transmitter empty, writes byte.
+ *              3. serial_printf(): Formats integer/string tokens and writes out bytes.
  */
 
 #include <aura/serial.h>

@@ -1,3 +1,16 @@
+/**
+ * @file        kernel/include/aura/sysmon.h
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   TELEMETRY_SYSMON
+ * @contract    TEL-001-telemetry / PRD-05-resources-telemetry
+ * @description System Telemetry and CPU load monitor interface.
+ *              Captures PIT timer ticks, tracks CPU idle time, and exposes stats.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel/core/dashboard.c
+ *              - Downstream: kernel/core/sysmon.c, kernel/arch/x86_shared/pit.c
+ */
+
 #ifndef AURA_SYSMON_H
 #define AURA_SYSMON_H
 

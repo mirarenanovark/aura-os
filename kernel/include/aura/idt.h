@@ -1,3 +1,16 @@
+/**
+ * @file        kernel/include/aura/idt.h
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   ARCH_IDT
+ * @contract    PRD-07-boot-platform
+ * @description Interrupt Descriptor Table structures, saved interrupt frame
+ *              definitions, and handler registration prototypes.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, pit.c, idt.c, isr.S
+ *              - Hardware:   CPU IDTR register, 8259 PIC (0x20/0x21, 0xA0/0xA1)
+ */
+
 #ifndef AURA_IDT_H
 #define AURA_IDT_H
 

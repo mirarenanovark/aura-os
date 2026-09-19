@@ -1,3 +1,25 @@
+/**
+ * @file        kernel/core/pmm.c
+ * @layer       STAGE_2_PHYSICAL_FAULT
+ * @component   PMM_BITMAP_ALLOCATOR
+ * @contract    PRD-05-resources-telemetry
+ * @description 4KB frame physical memory manager using a bit-level bitmap.
+ *              Each bit tracks 1 physical frame (1 = allocated, 0 = free).
+ *              Provides single frame allocation and contiguous frame allocation for
+ *              heap expansions and DMA buffers.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c:kernel_main (pmm_init), kernel/core/heap.c (grow_heap),
+ *                            kernel/arch/x86_64/vmm.c (page table levels)
+ *              - Hardware:   Raw physical address space
+ *
+ * @flow        [AURA_FLOW: PMM_FRAME_MGMT]
+ *              1. pmm_init(): Clears bitmap across total_frames based on detected RAM size.
+ *              2. pmm_alloc_frame(): Scans bitmap for first '0' bit, sets to '1', returns paddr.
+ *              3. pmm_free_frame(): Clears bit in bitmap, decrements used_frames counter.
+ *              4. pmm_alloc_contiguous(): Finds N adjacent free bits, marks all used.
+ */
+
 #include <aura/pmm.h>
 
 /* Internal State */

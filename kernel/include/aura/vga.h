@@ -1,3 +1,18 @@
+/**
+ * @file        kernel/include/aura/vga.h
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   DRIVER_VGA_CONSOLE
+ * @contract    PRD-07-boot-platform
+ * @description 80x25 standard VGA text mode console interface.
+ *              Linear MMIO buffer at 0xB8000, 16-color attributes,
+ *              scrolling, clear screen, and formatted printing.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel/drivers/tui.c, kernel/core/panic.c
+ *              - Downstream: kernel/drivers/vga.c
+ *              - Hardware:   VGA memory mapped I/O at physical 0xB8000
+ */
+
 #ifndef AURA_VGA_H
 #define AURA_VGA_H
 

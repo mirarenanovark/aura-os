@@ -1,5 +1,20 @@
-/* Multiboot2 header for AuraOS
- * Spec: Magic 0xE85250D6, Architecture 0 (i386/32-bit protected mode), 8-byte aligned.
+/**
+ * @file        boot/multiboot2_header.S
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   BOOT_MB2_HEADER
+ * @contract    PRD-07-boot-platform / Multiboot2 Specification
+ * @description 8-byte aligned Multiboot2 header loaded by GRUB2 / Limine.
+ *              Guarantees bootloader recognition and protected-mode handoff.
+ *
+ * @connects
+ *              - Upstream:   BIOS / UEFI -> GRUB2 Bootloader
+ *              - Downstream: boot/entry64.S (_start entry point)
+ *              - Hardware:   CPU in 32-bit protected mode (EAX=0x36d76289)
+ *
+ * @flow        [AURA_FLOW: BOOT_ENTRY]
+ *              1. Bootloader verifies magic 0xE85250D6 and checksum.
+ *              2. Bootloader loads ELF segments into RAM at 1MB physical.
+ *              3. Bootloader jumps to ELF entry point _start in boot/entry64.S.
  */
 
 #define MULTIBOOT2_HEADER_MAGIC         0xE85250D6

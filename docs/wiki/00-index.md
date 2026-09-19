@@ -11,11 +11,13 @@ modifying anything.
 ## Reading Order (mandatory for all contributors)
 
 1. [`01-governance/philosophy.md`](01-governance/philosophy.md) — the five laws, applies to every line.
-2. [`02-architecture/ADR-001-normative-architecture.md`](02-architecture/ADR-001-normative-architecture.md) — what AuraOS **is**.
-3. [`03-contracts/`](03-contracts/) — the frozen interfaces (ABI, telemetry, audio, window).
-4. [`04-prds/`](04-prds/) — one PRD per component.
-5. [`05-plans/`](05-plans/) — implementation plans per PRD.
-6. [`06-validation/`](06-validation/) — test gates and evidence ledger.
+2. [`../RULEBOOK.md`](../RULEBOOK.md) — mandatory documentation, cataloging, and tagging rulebook (`DOC-RULES-001`).
+3. [`../CODE_TAGS.md`](../CODE_TAGS.md) — cross-reference index and grep tracing cheat sheet (`CODE-TAGS-001`).
+4. [`02-architecture/ADR-001-normative-architecture.md`](02-architecture/ADR-001-normative-architecture.md) — what AuraOS **is**.
+5. [`03-contracts/`](03-contracts/) — the frozen interfaces (ABI, telemetry, audio, window).
+6. [`04-prds/`](04-prds/) — one PRD per component.
+7. [`05-plans/`](05-plans/) — implementation plans per PRD.
+8. [`06-validation/`](06-validation/) — test gates and evidence ledger.
 
 ---
 
@@ -64,9 +66,9 @@ Conflicts block affected work until resolved by an approved ADR.
 | 02 | [PRD-02-capabilities](04-prds/PRD-02-capabilities-protection.md) | Capability objects, protection, device authority | outlined |
 | 03 | [PRD-03-process](04-prds/PRD-03-process-lifecycle.md) | Process lifecycle, scheduler, ELF ABI | outlined |
 | 04 | [PRD-04-concurrency](04-prds/PRD-04-concurrency-ipc.md) | Concurrency, IPC, object lifetimes | outlined |
-| 05 | [PRD-05-resources](04-prds/PRD-05-resources-telemetry.md) | Resource quotas, OOM, telemetry | outlined |
-| 06 | [PRD-06-verification](04-prds/PRD-06-verification.md) | Test harness, fuzzing, fault injection | outlined |
-| 07 | [PRD-07-boot](04-prds/PRD-07-boot-platform.md) | Boot, serial console, clocks | coded |
+| 05 | [PRD-05-resources](04-prds/PRD-05-resources-telemetry.md) | Resource quotas, OOM, PMM & telemetry | tested |
+| 06 | [PRD-06-verification](04-prds/PRD-06-verification.md) | Test harness, fuzzing, fault injection | coded |
+| 07 | [PRD-07-boot](04-prds/PRD-07-boot-platform.md) | Boot, serial console, clocks, VGA console | tested |
 | 08 | [PRD-08-ramfs](04-prds/PRD-08-filesystem-shell.md) | initramfs, RAM filesystem, shell | planned |
 | 09 | [PRD-09-supervision](04-prds/PRD-09-supervision.md) | Service supervision & recovery | planned |
 | 10 | [PRD-10-storage](04-prds/PRD-10-storage.md) | Block devices, persistent storage | planned |

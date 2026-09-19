@@ -1,4 +1,24 @@
-/* ISR assembly stubs for x86_64 AuraOS */
+/**
+ * @file        kernel/arch/x86_shared/isr.S
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   ARCH_ISR_STUBS
+ * @contract    PRD-07-boot-platform
+ * @description Low-level assembly trampolines for CPU exceptions (0..31) and
+ *              hardware IRQs (32..47). Pushes dummy error codes where necessary,
+ *              saves general-purpose registers, switches to C ABI, and returns via iretq.
+ *
+ * @connects
+ *              - Upstream:   CPU interrupt vector invocation
+ *              - Downstream: kernel/arch/x86_shared/idt.c (isr_handler, irq_handler)
+ *              - Hardware:   CPU execution context & interrupt stack frame
+ *
+ * @flow        [AURA_FLOW: ISR_TRAMPOLINE]
+ *              1. CPU triggers interrupt / exception.
+ *              2. Stub pushes dummy error code (if absent) and interrupt number.
+ *              3. Common stub pushes RAX, RBX, RCX, RDX, RSI, RDI, RBP, R8-R15.
+ *              4. Passes stack pointer as struct registers * argument to C handler.
+ *              5. Restores registers and resumes execution via iretq.
+ */
 
 .section .text
 .code64

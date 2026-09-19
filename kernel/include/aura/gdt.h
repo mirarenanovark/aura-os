@@ -1,3 +1,16 @@
+/**
+ * @file        kernel/include/aura/gdt.h
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   ARCH_GDT
+ * @contract    PRD-02-capabilities-protection / PRD-07-boot-platform
+ * @description Global Descriptor Table & 64-bit Task State Segment structures.
+ *              Defines kernel/user code and data segment selectors.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel/arch/x86_shared/gdt.c, idt.c
+ *              - Hardware:   CPU GDTR register, CS/DS/SS/ES/FS/GS selectors
+ */
+
 #ifndef AURA_GDT_H
 #define AURA_GDT_H
 

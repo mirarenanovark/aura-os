@@ -1,8 +1,15 @@
-/*
- * AuraOS - 16550 UART serial driver (COM1 and friends).
+/**
+ * @file        kernel/include/aura/serial.h
+ * @layer       STAGE_1_HARDWARE_BOOT
+ * @component   SERIAL_UART16550
+ * @contract    PRD-07-boot-platform
+ * @description Header for the 16550 UART serial driver (COM1 0x3F8).
+ *              Polled character/string transmission, formatted printing.
  *
- * Freestanding, no stdlib. Polling only: no interrupts, no DMA.
- * 8N1 framing, FIFO enabled, divisor latched via DLAB.
+ * @connects
+ *              - Upstream:   kernel/main.c, kernel/core/panic.c, kernel/core/multiboot2.c
+ *              - Downstream: kernel/arch/x86_shared/serial.c
+ *              - Hardware:   I/O Ports 0x3F8 - 0x3FF
  */
 
 #ifndef AURA_SERIAL_H

@@ -1,3 +1,16 @@
+/**
+ * @file        kernel/include/aura/dashboard.h
+ * @layer       STAGE_4_SERVICES_DRIVERS
+ * @component   MONITOR_DASHBOARD
+ * @contract    TEL-001-telemetry / PRD-11-desktop-compositor
+ * @description System Status Dashboard interface.
+ *              Coordinates full btop-style monitoring UI rendering on 80x25 VGA.
+ *
+ * @connects
+ *              - Upstream:   kernel/main.c
+ *              - Downstream: kernel/core/dashboard.c
+ */
+
 #ifndef AURA_DASHBOARD_H
 #define AURA_DASHBOARD_H
 

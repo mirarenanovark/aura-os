@@ -1,8 +1,22 @@
-/*
- * AuraOS - Kernel panic handler.
+/**
+ * @file        kernel/core/panic.c
+ * @layer       STAGE_2_PHYSICAL_FAULT
+ * @component   CORE_PANIC
+ * @contract    PRD-06-verification
+ * @description Fatal kernel panic handler. Disables interrupts immediately,
+ *              clears VGA screen with bright red background, outputs source file and
+ *              line diagnostics to both VGA and COM1 serial, then enters infinite halt.
  *
- * Prints a PANIC banner (white on red) to both VGA text console and
- * COM1 serial, then halts the CPU with cli; hlt in an infinite loop.
+ * @connects
+ *              - Upstream:   Invoked anywhere via AURA_PANIC(msg)
+ *              - Downstream: kernel/drivers/vga.c, kernel/arch/x86_shared/serial.c
+ *              - Hardware:   CPU halt ('cli; hlt')
+ *
+ * @flow        [AURA_FLOW: PANIC_HALT]
+ *              1. Disables all interrupts ('cli').
+ *              2. Configures VGA text console to white-on-red and prints diagnostics.
+ *              3. Transmits panic message and file:line over COM1 serial.
+ *              4. Enters infinite 'hlt' loop to freeze CPU safely.
  */
 
 #include <aura/panic.h>

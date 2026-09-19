@@ -1,7 +1,14 @@
-/*
- * AuraOS - Kernel panic handler.
+/**
+ * @file        kernel/include/aura/panic.h
+ * @layer       STAGE_2_PHYSICAL_FAULT
+ * @component   CORE_PANIC
+ * @contract    PRD-06-verification
+ * @description Kernel panic assertion and fatal halt interface.
  *
- * Halts the CPU after printing a diagnostic to both VGA and COM1.
+ * @connects
+ *              - Upstream:   All kernel subsystems via AURA_PANIC macro
+ *              - Downstream: kernel/core/panic.c
+ *              - Hardware:   CPU halt ('cli; hlt')
  */
 
 #ifndef AURA_PANIC_H
