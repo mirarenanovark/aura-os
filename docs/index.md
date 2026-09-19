@@ -3,28 +3,76 @@ layout: default
 title: AuraOS Developer Wiki & System Architecture
 ---
 
-# AuraOS Documentation & Architecture
+# AuraOS Architecture & Developer Wiki
 
-Welcome to the official **AuraOS** engineering documentation and developer wiki.
-
-* **GitHub Repository:** [mirarenanovark/aura-os](https://github.com/mirarenanovark/aura-os)
-* **Core Philosophy:** *Clean. Simple. Small. Fast. Direct. No AI bloat. No overengineering. Proven. Works.*
-
----
-
-## Developer Wiki Directory
-
-Access the normative architecture, contracts, and component specifications below:
-
-* **[Wiki Master Index (00-index.md)](wiki/00-index.md)** — Entry point, reading order, and rules for human developers and subagents.
-* **[Philosophy & Governance (01-governance/philosophy.md)](wiki/01-governance/philosophy.md)** — The 5 engineering laws and conflict resolution rules.
-* **[ADR-001: Normative Architecture (02-architecture/ADR-001-normative-architecture.md)](wiki/02-architecture/ADR-001-normative-architecture.md)** — Authoritative system boundaries and tier definitions.
+<div style="background: rgba(41, 128, 185, 0.1); border-left: 4px solid #2980b9; padding: 12px 18px; margin-bottom: 25px; border-radius: 4px;">
+  <strong>Core Philosophy:</strong> <em>Clean. Simple. Small. Fast. Direct. No AI bloat. No overengineering. Proven. Works.</em><br>
+  <strong>Repository:</strong> <a href="https://github.com/mirarenanovark/aura-os">github.com/mirarenanovark/aura-os</a> | <strong>Status:</strong> Specifications & Frozen Contracts Complete
+</div>
 
 ---
 
-## Component PRDs (Product Requirements Documents)
+## 🏛️ System Architecture Overview
 
-| PRD | Title | Key Specification |
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          AuraOS Desktop Workspace                           │
+│                                                                             │
+│  [Aura Terminal]    [Sysmon Observatory]    [AI Coding Studio]   [Aura DAW] │
+│         │                    │                      │                │      │
+│         └────────────────────┼──────────────────────┴────────────────┘      │
+│                              ▼                                              │
+│               ┌───────────────────────────────┐                             │
+│               │  libaura-ui (Zero-Overhead)   │                             │
+│               └──────────────┬────────────────┘                             │
+│                              │ Lock-free Shm Surfaces / SPSC Rings          │
+│                              ▼                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │           Aura Userland Services (Supervised by aura-init)          │   │
+│   │                                                                     │   │
+│   │   [aura-wm] Glass Compositor         [aura-audiod] Audio Mixer      │   │
+│   │   • Dual Kawase 4x Pyramid Blur      • Lock-free SPSC Float32 Rings │   │
+│   │   • 9-Slice Aero/Frost Theming       • 10-Band EQ & Dynamic Limiter │   │
+│   │   • Dirty-Rect Blitting              • <2.6ms Low-Latency DAW Mode  │   │
+│   └──────────────────────────┬──────────────────────────────────────────┘   │
+│                              │ Direct Kernel Ring Buffers & MMIO            │
+│                              ▼                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │             AuraOS Freestanding C Monolithic Kernel                 │   │
+│   │                                                                     │   │
+│   │   [Memory Manager]   [Preemptive Sched]   [VFS / RamFS]   [IPC Engine]│ │
+│   │   • Bitmap PMM       • Round-Robin        • Bounded ramfs • Lock-free │ │
+│   │   • 4-Level Paging   • Capability Handles • Initramfs     • Syscalls  │ │
+│   └──────────────────────────┬──────────────────────────────────────────┘   │
+│                              │ Hardware Abstraction Layer (HAL)             │
+│                              ▼                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │       Hardware & Emulators (x86_64, i686, aarch64, armv7)           │   │
+│   │       VirtIO-GPU · GOP Linear Framebuffer · AC97/HDA · Serial COM1  │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📑 Complete Developer Wiki Directory
+
+### 1. Governance, Philosophy & ADRs
+* 📖 **[Master Wiki Index (`00-index.md`)](wiki/00-index.md)** — Entry point, reading order, and rules for developers and subagents.
+* 📜 **[The Five Laws (`01-governance/philosophy.md`)](wiki/01-governance/philosophy.md)** — The strict engineering philosophy and conflict resolution rules.
+* 🏛️ **[ADR-001: Normative Architecture (`02-architecture/ADR-001.md`)](wiki/02-architecture/ADR-001-normative-architecture.md)** — Canonical names, tier definitions, and system scope.
+
+### 2. Frozen ABI & Syscall Contracts (`03-contracts/`)
+* 🔒 **[ABI-001: Syscall & Wire Conventions](wiki/03-contracts/ABI-001-syscalls.md)** — Register layout, frozen syscall table, and alignment laws.
+* 🔒 **[TEL-001: Safe Telemetry Wire ABI](wiki/03-contracts/TEL-001-telemetry.md)** — Zero-overhead task manager contract, PID generation counters, struct layouts.
+* 🔒 **[WIN-001: Window Server & Surface Protocol](wiki/03-contracts/WIN-001-window-server.md)** — Double-buffered shared memory canvas and damage tracking.
+* 🔒 **[AUD-001: AuraAudio Realtime Protocol](wiki/03-contracts/AUD-001-audio.md)** — Lock-free SPSC float32 rings and zero-allocation realtime rules.
+
+---
+
+### 3. Product Requirements Documents (`04-prds/`)
+
+| ID | Title | Key Technical Scope |
 |---|---|---|
 | **[PRD-01](wiki/04-prds/PRD-01-governance-support-matrix.md)** | Governance & Support Matrix | Tier 1 (Core) vs Tier 2 (Extensions) |
 | **[PRD-02](wiki/04-prds/PRD-02-capabilities-protection.md)** | Capabilities & Protection | Handle tables, address space isolation |
@@ -46,8 +94,9 @@ Access the normative architecture, contracts, and component specifications below
 
 ---
 
-## Audits & Strategic References
-
-* **[Astra Adversarial Architecture Audit](ASTRA_FULL_DESIGN_AUDIT.md)** — Red-team review of design holes, ABI traps, and mitigations.
-* **[AuraAudio PRD](wiki/04-prds/PRD-12-audio.md)** — PulseEffects-style real-time DSP, pro-audio DAW latency contract.
-* **[Task Manager Specification](TASK_MANAGER_SPEC.md)** — Ubuntu-style frosted glass process observatory (`sysmon`).
+### 4. Implementation Plans & Verification (`05-plans/` & `06-validation/`)
+* 🛠️ **[PLAN-01: Bootloader Handoff & Serial Bringup](wiki/05-plans/PLAN-01-boot-serial.md)** — Limine x86_64, higher-half kernel, UART16550 serial console.
+* 🛠️ **[PLAN-02: Memory Paging & Processes](wiki/05-plans/PLAN-02-memory-processes.md)** — Bitmap PMM, 4-level PML4 paging, Ring-3 user mode.
+* 🛠️ **[PLAN-03: Initramfs & Native Shell](wiki/05-plans/PLAN-03-ramfs-shell.md)** — VFS, read-only initramfs, writable ramfs, CLI shell.
+* 🛠️ **[PLAN-04: Glass Compositor & Desktop](wiki/05-plans/PLAN-04-glass-desktop.md)** — `aura-wm`, Dual Kawase blur, `libaura-ui`, taskbar.
+* ✅ **[VAL-001: Test Gates & Evidence Ledger](wiki/06-validation/VAL-001-test-gates.md)** — Automated CI checks, host sanitizer runs, and test records.
