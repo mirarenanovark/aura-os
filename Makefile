@@ -14,6 +14,7 @@ ISO_DIR = $(BUILD_DIR)/isodir
 C_SRCS = kernel/main.c \
          kernel/core/multiboot2.c \
          kernel/core/pmm.c \
+         kernel/core/heap.c \
          kernel/core/panic.c \
          kernel/core/sysmon.c \
          kernel/drivers/vga.c \
@@ -55,12 +56,19 @@ $(BUILD_DIR)/auraos.iso: $(BUILD_DIR)/auraos.elf boot/iso/boot/grub/grub.cfg
 run: $(BUILD_DIR)/auraos.iso
 	qemu-system-x86_64 -cdrom $(BUILD_DIR)/auraos.iso -serial stdio -display none -no-reboot
 
-test: tests/test_pmm.c kernel/core/pmm.c
+test: test-pmm test-heap
+
+test-pmm: tests/test_pmm.c kernel/core/pmm.c
 	@mkdir -p $(BUILD_DIR)
 	$(HOST_CC) -Ikernel/include tests/test_pmm.c kernel/core/pmm.c -o $(BUILD_DIR)/test_pmm
 	@./$(BUILD_DIR)/test_pmm
 
+test-heap: tests/test_heap.c kernel/core/heap.c kernel/core/pmm.c
+	@mkdir -p $(BUILD_DIR)
+	$(HOST_CC) -Ikernel/include tests/test_heap.c kernel/core/heap.c kernel/core/pmm.c -o $(BUILD_DIR)/test_heap
+	@./$(BUILD_DIR)/test_heap
+
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run test clean
+.PHONY: all run test test-pmm test-heap clean

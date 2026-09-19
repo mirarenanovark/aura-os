@@ -1,0 +1,19 @@
+{
+  "discipline": {
+    "max_active_subagents": 3,
+    "min_dispatch_spacing_seconds": 40,
+    "reason": "9router trove/mimo-v2.5 has TPM limit; 5 parallel agents tripped 429 tpm_limit_exceeded at 07:26",
+    "queue_file": "tmp/dispatch_queue.json"
+  },
+  "active": [
+    {"id": "sa-0-5e5f0135", "module": "keyboard", "dispatched": "07:23:32"},
+    {"id": "sa-2-bab18254", "module": "sysmon", "dispatched": "07:23:32"},
+    {"id": "sa-3-0dff06fe", "module": "docs", "dispatched": "07:23:32"},
+    {"id": "sa-0-1283cfe7", "module": "heap", "dispatched": "07:31:00"}
+  ],
+  "queue": [
+    {"wave": "A", "module": "tui-framework", "status": "dispatching"},
+    {"wave": "B", "module": "proctab", "status": "queued", "not_before": "+40s"},
+    {"wave": "C", "module": "auratop-dashboard", "status": "queued", "not_before": "+80s"}
+  ]
+}
