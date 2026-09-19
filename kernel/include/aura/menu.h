@@ -23,4 +23,12 @@ void menu_render(void);
  */
 void menu_update(void);
 
+/**
+ * Add a message to the menu console output log.
+ */
+void menu_log(const char *msg);
+
 #endif /* AURA_MENU_H */
+
+
+

@@ -57,6 +57,10 @@ static void log_print(const char *msg) {
     }
 }
 
+void menu_log(const char *msg) {
+    log_print(msg);
+}
+
 static bool str_eq(const char *a, const char *b) {
     while (*a && *b) {
         if (*a != *b) return false;

@@ -43,6 +43,7 @@
 #include <aura/dashboard.h>
 #include <aura/menu.h>
 #include <aura/keyboard.h>
+#include <aura/panic.h>
 
 static struct aura_boot_info boot_info;
 
@@ -169,6 +170,9 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     // [AURA_FLOW: KERNEL_INIT] Step 12: Render interactive boot menu & command prompt
     menu_init();
     menu_render();
+
+    /* Establish safe execution recovery checkpoint for kernel panics */
+    panic_set_recovery_point();
 
     /* Interactive keyboard polling and live screen update loop */
     uint64_t last_refresh = pit_get_ticks();

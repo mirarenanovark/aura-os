@@ -213,28 +213,21 @@ static const char *exception_messages[32] = {
     "Reserved"
 };
 
+#include <aura/panic.h>
+
 void isr_handler(registers_t *regs)
 {
     if (regs->int_no < 32) {
-        serial_printf(COM1, "\n[KERNEL PANIC] CPU Exception %d: %s (err code: 0x%x)\n",
-                      (uint32_t)regs->int_no,
-                      exception_messages[regs->int_no],
-                      (uint32_t)regs->err_code);
-#if defined(__x86_64__)
-        serial_printf(COM1, "RIP: 0x%x  CS: 0x%x  RFLAGS: 0x%x  RSP: 0x%x\n",
-                      regs->rip, regs->cs, regs->rflags, regs->rsp);
-        serial_printf(COM1, "RAX: 0x%x  RBX: 0x%x  RCX: 0x%x  RDX: 0x%x\n",
-                      regs->rax, regs->rbx, regs->rcx, regs->rdx);
-#endif
-        for (;;) {
-            __asm__ volatile("cli; hlt");
-        }
+        const char *reason = (regs->int_no < 32) ? exception_messages[regs->int_no] : "CPU Exception";
+        aura_panic_interactive(reason, NULL, 0, regs);
+        return;
     }
 
     if (interrupt_handlers[regs->int_no]) {
         interrupt_handlers[regs->int_no](regs);
     }
 }
+
 
 void irq_handler(registers_t *regs)
 {
