@@ -65,7 +65,9 @@ int zram_compress_page(const uint8_t *src, uint8_t *dst, size_t max_dst) {
         /* Emit literal block */
         size_t lit_start = in_idx;
         size_t lit_len = 0;
-        while (in_idx < ZRAM_PAGE_SIZE && lit_len < 127) {
+        size_t lit_cap = max_dst - out_idx - 1; /* space for payload after tag byte */
+        if (lit_cap > 127) lit_cap = 127;
+        while (in_idx < ZRAM_PAGE_SIZE && lit_len < lit_cap) {
             if (in_idx + 4 < ZRAM_PAGE_SIZE && src[in_idx] == 0 && src[in_idx+1] == 0 &&
                 src[in_idx+2] == 0 && src[in_idx+3] == 0) {
                 break;
@@ -75,7 +77,7 @@ int zram_compress_page(const uint8_t *src, uint8_t *dst, size_t max_dst) {
         }
 
         if (lit_len > 0) {
-            if (out_idx + 1 + lit_len >= max_dst) return -1;
+            if (out_idx + 1 + lit_len > max_dst) return -1;
             dst[out_idx++] = (uint8_t)(ZRAM_TAG_LITERAL | (lit_len & 0x7F));
             for (size_t k = 0; k < lit_len; k++) {
                 dst[out_idx++] = src[lit_start + k];
@@ -210,8 +212,13 @@ int zram_free(uint32_t handle) {
     return 0;
 }
 
+/* Freestanding-safe: copy stats field-by-field (no SSE movdqa vectorization) */
 void zram_get_stats(struct zram_stats *out_stats) {
-    if (out_stats) {
-        *out_stats = stats;
-    }
+    if (!out_stats) return;
+    out_stats->pages_stored = stats.pages_stored;
+    out_stats->original_bytes = stats.original_bytes;
+    out_stats->compressed_bytes = stats.compressed_bytes;
+    out_stats->compression_ratio_x100 = stats.compression_ratio_x100;
+    out_stats->total_compressions = stats.total_compressions;
+    out_stats->total_decompressions = stats.total_decompressions;
 }

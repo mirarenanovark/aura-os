@@ -2,6 +2,17 @@
 
 All releases, newest first. Module scopes: `boot` `kernel` `drivers` `gui` `libs` `userland` `tools` `tests`. See the [Versioning Protocol](wiki/01-governance/versioning.html) for the rules.
 
+## v0.2.2-zram (2026-09-19) — stage: zRAM In-Memory Compression
+Milestone update: Lightweight Apple vm_compressor-style in-memory page compressor and pool allocator.
+### kernel
+- In-memory zRAM page compressor (`kernel/core/zram.c`, `kernel/include/aura/zram.h`) with run-length and zero-word packing
+- Freestanding copy semantics preventing SIMD/SSE `movdqa` invalid opcode traps on uninitialized vector registers
+- System monitor integration exposing compressed memory ratio and page counts
+### tests
+- Complete host verification suite for zero page compression, pattern page runs, and store/load/free cycles (`tests/test_zram.c`)
+### docs
+- Engineering roadmap and milestone tracker (`docs/roadmap.md`, `docs/TASK_QUEUE.md`, `docs/BUGS.md`)
+
 ## v0.2.1-tui (2026-09-19) — stage: TUI contrast + live refresh
 PATCH release: fixes washed-out dashboard colors and the frozen (render-once) display.
 ### kernel
