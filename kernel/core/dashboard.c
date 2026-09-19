@@ -71,7 +71,6 @@ static void format_uptime(char *buf, uint64_t ms) {
     buf[4] = '0' + (char)(m % 10);
     buf[5] = ':';
     buf[6] = '0' + (char)(s / 10);
-    buf[7] = '0' + (char)(s % 60);
     buf[7] = '0' + (char)(s % 10);
     buf[8] = '\0';
 }
@@ -158,11 +157,11 @@ void dashboard_render(void) {
     format_uptime(uptime_str, stats.uptime_ms);
 
     /* Full-width header: bright yellow title on blue band */
-    tui_draw_header(" AuraOS v0.2.2-zram ", uptime_str);
+    tui_draw_header(" AuraOS v0.2.3 ", uptime_str);
 
     draw_cpu_box();
     draw_memory_box();
     draw_process_table();
 
-    tui_draw_footer(" [Q] halt   [R] redraw");
+    tui_draw_footer(" [Q] menu   [R] redraw");
 }

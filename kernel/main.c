@@ -53,7 +53,7 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     vga_init();
     vga_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK);
     vga_printf("========================================\n");
-    vga_printf("    AuraOS Kernel v0.1.0-alpha\n");
+    vga_printf("    AuraOS Kernel v0.2.3\n");
     vga_printf("  Clean. Simple. Small. Fast. Direct.\n");
     vga_printf("========================================\n\n");
     vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
@@ -62,7 +62,7 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     // [AURA_CONNECTS: SERIAL_UART16550 -> serial_init]
     serial_init(COM1, 115200);
     serial_printf(COM1, "\n\n========================================\n");
-    serial_printf(COM1, "    AuraOS Kernel v0.1.0-alpha (Phase 1)\n");
+    serial_printf(COM1, "    AuraOS Kernel v0.2.3\n");
     serial_printf(COM1, "  Clean. Simple. Small. Fast. Direct.\n");
     serial_printf(COM1, "========================================\n\n");
 
@@ -129,12 +129,7 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     // [AURA_FLOW: KERNEL_INIT] Step 9: Initialize zram in-memory compressor
     // [AURA_CONNECTS: MEMORY_ZRAM_COMPRESSOR -> zram_init]
     zram_init();
-    /* Warm up zram with initial compressible kernel page to verify compression pipeline */
-    uint8_t sample_page[4096];
-    for (int i = 0; i < 4096; i++) sample_page[i] = (i < 256) ? (uint8_t)(i & 0x0F) : 0;
-    uint32_t zhandle = 0;
-    zram_store(sample_page, &zhandle);
-    serial_printf(COM1, "[OK] zRAM in-memory compressor initialized (pool capacity: 4MB)\n");
+    serial_printf(COM1, "[OK] zRAM in-memory compressor initialized\n");
     vga_printf("[OK] zRAM compressor ready\n");
 
     // [AURA_FLOW: KERNEL_INIT] Step 10: Initialize sysmon (must be after PIT + PMM + zRAM)
