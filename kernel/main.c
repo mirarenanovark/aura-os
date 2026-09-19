@@ -6,6 +6,9 @@
 #include <aura/pmm.h>
 #include <aura/multiboot2.h>
 #include <aura/vga.h>
+#include <aura/heap.h>
+#include <aura/sysmon.h>
+#include <aura/dashboard.h>
 
 static struct aura_boot_info boot_info;
 
@@ -75,6 +78,16 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
                (uint32_t)(pmm_get_free_memory() / (1024 * 1024)),
                (uint32_t)(pmm_get_total_memory() / (1024 * 1024)));
 
+    /* Initialize heap after PMM */
+    heap_init(0);
+    serial_printf(COM1, "[OK] Heap initialized (identity mapped)\n");
+    vga_printf("[OK] Heap initialized\n");
+
+    /* Initialize sysmon (must be after PIT + PMM) */
+    sysmon_init();
+    serial_printf(COM1, "[OK] System monitor started\n");
+    vga_printf("[OK] System monitor started\n");
+
     /* Enable CPU interrupts */
     __asm__ __volatile__("sti");
 
@@ -90,6 +103,16 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     serial_printf(COM1, "\n>>> AuraOS Stage 1 Boot Complete. System ready. <<<\n\n");
     vga_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
     vga_printf("\n>>> AuraOS Stage 1 Boot Complete. System Ready. <<<\n");
+
+    /* Wait for sysmon to collect initial data */
+    uint64_t wait_ticks = pit_get_ticks();
+    while (pit_get_ticks() - wait_ticks < 1100) {
+        __asm__ __volatile__("pause");
+    }
+
+    /* Render the btop-style dashboard */
+    dashboard_init();
+    dashboard_render();
 
     /* System idle loop */
     while (1) {
