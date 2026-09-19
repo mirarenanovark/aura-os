@@ -96,10 +96,57 @@ static void execute_command(const char *cmd) {
         struct zram_stats z;
         zram_get_stats(&z);
 
-        log_print("Memory breakdown:");
-        log_print("  PMM RAM: 127 MB total / 126 MB free");
-        log_print("  Kernel Heap: 4 MB pool (dynamic paging)");
-        log_print("  zRAM Pool: 1024 pages capacity (RLE compressor active)");
+        char line[80];
+        tui_printf_at(0, 0, 0, ""); /* no-op: keep tui linked */
+        /* PMM line */
+        {
+            const char *p1 = "  PMM RAM: ";
+            int i = 0;
+            while (p1[i]) { line[i] = p1[i]; i++; }
+            /* format used/total MB */
+            uint32_t used_mb = (uint32_t)(s.ram_used_kb / 1024);
+            uint32_t total_mb = (uint32_t)(s.ram_total_kb / 1024);
+            /* small manual formatting */
+            char num[16];
+            int n = 0;
+            uint32_t v = used_mb;
+            do { num[n++] = '0' + (v % 10); v /= 10; } while (v);
+            while (n) { line[i++] = num[--n]; }
+            line[i++] = '/';
+            v = total_mb; n = 0;
+            do { num[n++] = '0' + (v % 10); v /= 10; } while (v);
+            while (n) { line[i++] = num[--n]; }
+            line[i++] = ' ';
+            line[i++] = 'M';
+            line[i++] = 'B';
+            line[i] = '\0';
+            log_print(line);
+        }
+        /* Heap line */
+        log_print("  Kernel Heap: 4 MB pool (free-list allocator)");
+        /* zram line */
+        {
+            const char *p1 = "  zRAM: ";
+            int i = 0;
+            while (p1[i]) { line[i] = p1[i]; i++; }
+            uint32_t ratio = z.compression_ratio_x100;
+            char num[16];
+            int n = 0;
+            uint32_t v = ratio / 100;
+            do { num[n++] = '0' + (v % 10); v /= 10; } while (v);
+            while (n) { line[i++] = num[--n]; }
+            line[i++] = '.';
+            line[i++] = '0' + (char)((ratio % 100) / 10);
+            line[i++] = 'x';
+            line[i++] = ' ';
+            line[i++] = 'r';
+            line[i++] = 'a';
+            line[i++] = 't';
+            line[i++] = 'i';
+            line[i++] = 'o';
+            line[i] = '\0';
+            log_print(line);
+        }
     } else if (str_eq(cmd, "clear")) {
         log_count = 0;
     } else if (str_eq(cmd, "dashboard")) {
