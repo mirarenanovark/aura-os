@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }} | AuraOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+
+  <!-- Top Glass Header -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="{{ '/' | relative_url }}" class="brand-link">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="brand-name">Aura<span>OS</span></span>
+        </a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="{{ '/' | relative_url }}" class="nav-item {% if page.url == '/' %}active{% endif %}">Overview</a>
+        <a href="{{ '/wiki/00-index.html' | relative_url }}" class="nav-item">Wiki Index</a>
+        <a href="{{ '/wiki/01-governance/philosophy.html' | relative_url }}" class="nav-item">Philosophy</a>
+        <a href="#contracts" class="nav-item">Contracts</a>
+        <a href="#prds" class="nav-item">PRDs</a>
+        <a href="https://github.com/mirarenanovark/aura-os" target="_blank" class="nav-btn-github">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sidebar + Main Content Layout -->
+  <div class="layout-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Getting Started</h4>
+        <ul class="sidebar-menu">
+          <li><a href="{{ '/' | relative_url }}">Overview & Architecture</a></li>
+          <li><a href="{{ '/wiki/00-index.html' | relative_url }}">Wiki Master Index</a></li>
+          <li><a href="{{ '/wiki/01-governance/philosophy.html' | relative_url }}">The Five Laws</a></li>
+          <li><a href="{{ '/wiki/02-architecture/ADR-001-normative-architecture.html' | relative_url }}">ADR-001 Architecture</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Frozen Contracts (03)</h4>
+        <ul class="sidebar-menu">
+          <li><a href="{{ '/wiki/03-contracts/ABI-001-syscalls.html' | relative_url }}">ABI-001: Syscalls</a></li>
+          <li><a href="{{ '/wiki/03-contracts/TEL-001-telemetry.html' | relative_url }}">TEL-001: Telemetry</a></li>
+          <li><a href="{{ '/wiki/03-contracts/WIN-001-window-server.html' | relative_url }}">WIN-001: Window Server</a></li>
+          <li><a href="{{ '/wiki/03-contracts/AUD-001-audio.html' | relative_url }}">AUD-001: Audio Engine</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Component PRDs (04)</h4>
+        <ul class="sidebar-menu">
+          <li><a href="{{ '/wiki/04-prds/PRD-01-governance-support-matrix.html' | relative_url }}">PRD-01 Governance</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-02-capabilities-protection.html' | relative_url }}">PRD-02 Protection</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-03-process-lifecycle.html' | relative_url }}">PRD-03 Processes</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-04-concurrency-ipc.html' | relative_url }}">PRD-04 IPC & Rings</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-05-resources-telemetry.html' | relative_url }}">PRD-05 Quotas & OOM</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-06-verification.html' | relative_url }}">PRD-06 Test Harness</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-07-boot-platform.html' | relative_url }}">PRD-07 Boot & Clocks</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-08-filesystem-shell.html' | relative_url }}">PRD-08 Shell & RAMFS</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-09-supervision.html' | relative_url }}">PRD-09 Supervision</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-10-storage.html' | relative_url }}">PRD-10 Storage</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-11-desktop-compositor.html' | relative_url }}">PRD-11 Glass UI</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-12-audio.html' | relative_url }}">PRD-12 AuraAudio</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-13-terminal.html' | relative_url }}">PRD-13 Terminal</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-14-hostile-content.html' | relative_url }}">PRD-14 Hostile Content</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-15-toolchain.html' | relative_url }}">PRD-15 Toolchains</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-16-network.html' | relative_url }}">PRD-16 Network & TLS</a></li>
+          <li><a href="{{ '/wiki/04-prds/PRD-17-arch-enablement.html' | relative_url }}">PRD-17 Multi-Arch</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h4 class="sidebar-title">Plans & Validation</h4>
+        <ul class="sidebar-menu">
+          <li><a href="{{ '/wiki/05-plans/PLAN-01-boot-serial.html' | relative_url }}">PLAN-01 Boot & Serial</a></li>
+          <li><a href="{{ '/wiki/05-plans/PLAN-02-memory-processes.html' | relative_url }}">PLAN-02 Memory & Proc</a></li>
+          <li><a href="{{ '/wiki/05-plans/PLAN-03-ramfs-shell.html' | relative_url }}">PLAN-03 RAMFS & Shell</a></li>
+          <li><a href="{{ '/wiki/05-plans/PLAN-04-glass-desktop.html' | relative_url }}">PLAN-04 Glass Desktop</a></li>
+          <li><a href="{{ '/wiki/06-validation/VAL-001-test-gates.html' | relative_url }}">VAL-001 Test Gates</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-body">
+      {{ content }}
+    </main>
+  </div>
+
+</body>
+</html>
