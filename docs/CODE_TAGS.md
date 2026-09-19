@@ -48,6 +48,7 @@ grep -rn "\[AURA_FLOW: HEAP_GROW\]" .
 | `[AURA_COMPONENT: CORE_PANIC]` | Stage 2 | `kernel/core/panic.c`, `panic.h` | `PRD-06-verification` | Kernel Assertions | VGA + COM1 halt sequence |
 | `[AURA_COMPONENT: PMM_BITMAP_ALLOCATOR]` | Stage 2 | `kernel/core/pmm.c`, `pmm.h` | `PRD-05-resources` | `kernel_main`, Heap, VMM | Physical RAM frames (4KB) |
 | `[AURA_COMPONENT: KERNEL_HEAP_FREELIST]` | Stage 3 | `kernel/core/heap.c`, `heap.h` | `PRD-05-resources` | Kernel allocations | `pmm.c:pmm_alloc_contiguous` |
+| `[AURA_COMPONENT: MEMORY_ZRAM_COMPRESSOR]` | Stage 3 | `kernel/core/zram.c`, `zram.h` | `PRD-05-resources` | `kernel_main`, VMM | `heap.c:kmalloc/kfree`, In-RAM pool |
 | `[AURA_COMPONENT: VMM_4LEVEL_PAGING]` | Stage 3 | `kernel/arch/x86_64/vmm.c`, `vmm.h` | `PRD-02-capabilities` | Kernel paging setup | `pmm.c:pmm_alloc_frame`, CR3 |
 | `[AURA_COMPONENT: DRIVER_VGA_CONSOLE]` | Stage 4 | `kernel/drivers/vga.c`, `vga.h` | `PRD-07-boot-platform` | `kernel_main`, TUI, Panic | MMIO 0xB8000 (80x25 text buffer) |
 | `[AURA_COMPONENT: DRIVER_TUI_ENGINE]` | Stage 4 | `kernel/drivers/tui.c`, `tui.h` | `PRD-11-desktop` | `dashboard.c` | `vga.c:VGA_MEMORY` |

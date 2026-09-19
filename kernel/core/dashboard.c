@@ -109,9 +109,14 @@ static void draw_memory_box(void) {
     tui_printf_at(47, 3, 0x0D, "%u/%u MB", used_mb, total_mb);
     tui_printf_at(42, 4, 0x0F, "Heap");
     tui_printf_at(48, 4, 0x0D, "%u KB used", (uint32_t)(heap_get_used() / 1024));
+    tui_printf_at(42, 5, 0x0F, "zRAM");
+    tui_printf_at(48, 5, 0x0A, "%uKB saved (%u.%ux)",
+                  stats.zram_saved_kb,
+                  stats.zram_ratio_x100 / 100,
+                  (stats.zram_ratio_x100 % 100) / 10);
 
     /* Bar: bright magenta fill over a dim track */
-    tui_draw_bar(42, 6, 36, stats.ram_used_kb, stats.ram_total_kb, 0x0D, 0x08);
+    tui_draw_bar(42, 7, 36, stats.ram_used_kb, stats.ram_total_kb, 0x0D, 0x08);
 }
 
 static void draw_process_table(void) {
@@ -153,7 +158,7 @@ void dashboard_render(void) {
     format_uptime(uptime_str, stats.uptime_ms);
 
     /* Full-width header: bright yellow title on blue band */
-    tui_draw_header(" AuraOS v0.2.1 ", uptime_str);
+    tui_draw_header(" AuraOS v0.2.2-zram ", uptime_str);
 
     draw_cpu_box();
     draw_memory_box();

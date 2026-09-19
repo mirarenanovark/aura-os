@@ -23,6 +23,7 @@
 #include <aura/sysmon.h>
 #include <aura/pit.h>
 #include <aura/pmm.h>
+#include <aura/zram.h>
 
 /* Rolling CPU-load window: 1000 ticks = 1 second at 1000 Hz PIT */
 #define SYSMON_WINDOW 1000
@@ -96,4 +97,13 @@ void sysmon_get_stats(struct sysmon_stats *out)
     size_t free  = pmm_get_free_memory();
     out->ram_total_kb = (uint32_t)(total / 1024);
     out->ram_used_kb  = (uint32_t)((total - free) / 1024);
+
+    struct zram_stats zstats;
+    zram_get_stats(&zstats);
+    if (zstats.original_bytes >= zstats.compressed_bytes) {
+        out->zram_saved_kb = (zstats.original_bytes - zstats.compressed_bytes) / 1024;
+    } else {
+        out->zram_saved_kb = 0;
+    }
+    out->zram_ratio_x100 = zstats.compression_ratio_x100;
 }

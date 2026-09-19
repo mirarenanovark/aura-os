@@ -38,6 +38,7 @@
 #include <aura/multiboot2.h>
 #include <aura/vga.h>
 #include <aura/heap.h>
+#include <aura/zram.h>
 #include <aura/sysmon.h>
 #include <aura/dashboard.h>
 
@@ -122,13 +123,24 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     serial_printf(COM1, "[OK] Heap initialized (identity mapped)\n");
     vga_printf("[OK] Heap initialized\n");
 
-    // [AURA_FLOW: KERNEL_INIT] Step 9: Initialize sysmon (must be after PIT + PMM)
+    // [AURA_FLOW: KERNEL_INIT] Step 9: Initialize zram in-memory compressor
+    // [AURA_CONNECTS: MEMORY_ZRAM_COMPRESSOR -> zram_init]
+    zram_init();
+    /* Warm up zram with initial compressible kernel page to verify compression pipeline */
+    uint8_t sample_page[4096];
+    for (int i = 0; i < 4096; i++) sample_page[i] = (i < 256) ? (uint8_t)(i & 0x0F) : 0;
+    uint32_t zhandle = 0;
+    zram_store(sample_page, &zhandle);
+    serial_printf(COM1, "[OK] zRAM in-memory compressor initialized (pool capacity: 4MB)\n");
+    vga_printf("[OK] zRAM compressor ready\n");
+
+    // [AURA_FLOW: KERNEL_INIT] Step 10: Initialize sysmon (must be after PIT + PMM + zRAM)
     // [AURA_CONNECTS: TELEMETRY_SYSMON -> sysmon_init]
     sysmon_init();
     serial_printf(COM1, "[OK] System monitor started\n");
     vga_printf("[OK] System monitor started\n");
 
-    // [AURA_FLOW: KERNEL_INIT] Step 10: Enable CPU interrupts & verify delivery
+    // [AURA_FLOW: KERNEL_INIT] Step 11: Enable CPU interrupts & verify delivery
     __asm__ __volatile__("sti");
 
     uint64_t start_ticks = pit_get_ticks();

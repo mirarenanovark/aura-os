@@ -12,12 +12,14 @@ modifying anything.
 
 1. [`01-governance/philosophy.md`](01-governance/philosophy.md) — the five laws, applies to every line.
 2. [`../RULEBOOK.md`](../RULEBOOK.md) — mandatory documentation, cataloging, and tagging rulebook (`DOC-RULES-001`).
-3. [`../CODE_TAGS.md`](../CODE_TAGS.md) — cross-reference index and grep tracing cheat sheet (`CODE-TAGS-001`).
-4. [`02-architecture/ADR-001-normative-architecture.md`](02-architecture/ADR-001-normative-architecture.md) — what AuraOS **is**.
-5. [`03-contracts/`](03-contracts/) — the frozen interfaces (ABI, telemetry, audio, window).
-6. [`04-prds/`](04-prds/) — one PRD per component.
-7. [`05-plans/`](05-plans/) — implementation plans per PRD.
-8. [`06-validation/`](06-validation/) — test gates and evidence ledger.
+3. [`../TASK_QUEUE.md`](../TASK_QUEUE.md) — subagent development task queue & claim board (`TASK-QUEUE-001`).
+4. [`../BUGS.md`](../BUGS.md) — known issues and bugs bulletin board (`BUG-BOARD-001`).
+5. [`../CODE_TAGS.md`](../CODE_TAGS.md) — cross-reference index and grep tracing cheat sheet (`CODE-TAGS-001`).
+6. [`02-architecture/ADR-001-normative-architecture.md`](02-architecture/ADR-001-normative-architecture.md) — what AuraOS **is**.
+7. [`03-contracts/`](03-contracts/) — the frozen interfaces (ABI, telemetry, audio, window).
+8. [`04-prds/`](04-prds/) — one PRD per component.
+9. [`05-plans/`](05-plans/) — implementation plans per PRD.
+10. [`06-validation/`](06-validation/) — test gates and evidence ledger.
 
 ---
 

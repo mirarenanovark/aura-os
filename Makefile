@@ -15,6 +15,7 @@ C_SRCS = kernel/main.c \
          kernel/core/multiboot2.c \
          kernel/core/pmm.c \
          kernel/core/heap.c \
+         kernel/core/zram.c \
          kernel/core/panic.c \
          kernel/core/sysmon.c \
          kernel/core/dashboard.c \
@@ -58,7 +59,7 @@ $(BUILD_DIR)/auraos.iso: $(BUILD_DIR)/auraos.elf boot/iso/boot/grub/grub.cfg
 run: $(BUILD_DIR)/auraos.iso
 	qemu-system-x86_64 -cdrom $(BUILD_DIR)/auraos.iso -serial stdio -display none -no-reboot
 
-test: test-pmm test-heap
+test: test-pmm test-heap test-zram
 
 test-pmm: tests/test_pmm.c kernel/core/pmm.c
 	@mkdir -p $(BUILD_DIR)
@@ -70,7 +71,12 @@ test-heap: tests/test_heap.c kernel/core/heap.c kernel/core/pmm.c
 	$(HOST_CC) -Ikernel/include tests/test_heap.c kernel/core/heap.c kernel/core/pmm.c -o $(BUILD_DIR)/test_heap
 	@./$(BUILD_DIR)/test_heap
 
+test-zram: tests/test_zram.c kernel/core/zram.c kernel/core/heap.c kernel/core/pmm.c
+	@mkdir -p $(BUILD_DIR)
+	$(HOST_CC) -Ikernel/include tests/test_zram.c kernel/core/zram.c kernel/core/heap.c kernel/core/pmm.c -o $(BUILD_DIR)/test_zram
+	@./$(BUILD_DIR)/test_zram
+
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run test test-pmm test-heap clean
+.PHONY: all run test test-pmm test-heap test-zram clean

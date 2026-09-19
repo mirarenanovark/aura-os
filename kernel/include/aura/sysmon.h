@@ -21,6 +21,8 @@ struct sysmon_stats {
     uint8_t  cpu_load_pct;    /* 0-100, rolling average over SYSMON_WINDOW ticks */
     uint32_t ram_used_kb;     /* PMM: total - free */
     uint32_t ram_total_kb;    /* PMM: total physical memory */
+    uint32_t zram_saved_kb;   /* zram: uncompressed - compressed KB saved */
+    uint32_t zram_ratio_x100; /* zram: compression ratio x100 */
 };
 
 /* Initialize sysmon; call after PIT + PMM are ready. Registers as PIT callback. */
