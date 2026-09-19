@@ -39,7 +39,7 @@ Whenever an autonomous subagent is spawned to work on AuraOS:
 | Task ID | Component | Description & Target | Contracts | Dependencies | Status | Assigned Agent |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `TASK-MEM-00` | zRAM Compressor | In-RAM WKdm/RLE compressed page pool (`zram.c`, `zram.h`), telemetry hooks, and TUI display gauge. | `PRD-05-resources`, `auraos_memory_blueprint` | None | `[COMPLETED]` | Orchestrator (v0.2.2) |
-| `TASK-MEM-01` | PMM Fast-Path | Replace linear bit scanning with 64-bit word scanning (`__builtin_ctzll` / `tzcnt`) + allocation hint pointer in `pmm.c`. | `PRD-05-resources`, `kernel_optimization_report` | None | `[READY]` | Unassigned |
+| `TASK-MEM-01` | PMM Fast-Path | Replace linear bit scanning with 64-bit word scanning (`__builtin_ctzll` / `tzcnt`) + allocation hint pointer in `pmm.c`. | `PRD-05-resources`, `kernel_optimization_report` | None | `[COMPLETED]` | Mira (orchestrated, v0.2.5) |
 | `TASK-MEM-02` | Dynamic Bitmap | Relocate PMM bitmap dynamically to physical memory immediately after kernel `_end` instead of fixed `0x20000`. | `PRD-07-boot`, `ADR-001` | None | `[READY]` | Unassigned |
 | `TASK-MEM-03` | VMM Higher-Half | Implement Higher-Half Direct Map (HHDM) window (`0xFFFF800000000000`) and 2MB huge page folding in `vmm.c`. | `PRD-02-capabilities`, `auraos_memory_blueprint` | `TASK-MEM-01` | `[READY]` | Unassigned |
 | `TASK-MEM-04` | Page Fault ISR | Implement `#PF` (Vector 14) exception handler reading CR2, diagnosing violation code (present, write, user), and panic/recovery. | `PRD-02-capabilities`, `PRD-06-verification` | None | `[COMPLETED]` | Torve (`trove/mimo-v2.5`) + Mira |

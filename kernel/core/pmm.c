@@ -26,6 +26,7 @@
 static uint8_t *bitmap = (void*)0;
 static size_t total_frames = 0;
 static size_t used_frames = 0;
+static size_t alloc_hint = 0; /* Next frame index to test for allocation fast-path */
 
 /* Helper Macros */
 #define BITMAP_SET(bit)   (bitmap[(bit) / 8] |= (uint8_t)(1 << ((bit) % 8)))
@@ -36,6 +37,7 @@ void pmm_init(uintptr_t mem_size, uintptr_t bitmap_base) {
     bitmap = (uint8_t *)bitmap_base;
     total_frames = mem_size / PAGE_SIZE;
     used_frames = 0;
+    alloc_hint = 0;
 
     /* Initialize all memory as free (0) */
     size_t bitmap_size = (total_frames + 7) / 8;
@@ -57,17 +59,62 @@ void pmm_mark_free(uintptr_t paddr) {
     if (frame < total_frames && BITMAP_TEST(frame)) {
         BITMAP_CLEAR(frame);
         used_frames--;
+        if (frame < alloc_hint) {
+            alloc_hint = frame;
+        }
     }
 }
 
 uintptr_t pmm_alloc_frame(void) {
-    for (size_t i = 0; i < total_frames; i++) {
+    if (used_frames >= total_frames) {
+        return 0; /* Memory completely exhausted */
+    }
+
+    /* Fast-path: scan by 64-bit words starting at alloc_hint */
+    const uint64_t *words = (const uint64_t *)bitmap;
+    size_t total_words = total_frames / 64;
+    size_t start_word = alloc_hint / 64;
+
+    /* Phase 1: Scan from hint to end of word array */
+    for (size_t w = start_word; w < total_words; w++) {
+        uint64_t val = words[w];
+        if (val != ~0ULL) { /* Has at least one 0 bit (free frame) */
+            int bit = __builtin_ctzll(~val);
+            size_t frame = w * 64 + (size_t)bit;
+            if (frame < total_frames) {
+                BITMAP_SET(frame);
+                used_frames++;
+                alloc_hint = frame + 1;
+                return (uintptr_t)(frame * PAGE_SIZE);
+            }
+        }
+    }
+
+    /* Phase 2: Wrap around from word 0 to start_word */
+    for (size_t w = 0; w < start_word; w++) {
+        uint64_t val = words[w];
+        if (val != ~0ULL) {
+            int bit = __builtin_ctzll(~val);
+            size_t frame = w * 64 + (size_t)bit;
+            if (frame < total_frames) {
+                BITMAP_SET(frame);
+                used_frames++;
+                alloc_hint = frame + 1;
+                return (uintptr_t)(frame * PAGE_SIZE);
+            }
+        }
+    }
+
+    /* Phase 3: Trailing bits if total_frames is not an exact multiple of 64 */
+    for (size_t i = total_words * 64; i < total_frames; i++) {
         if (!BITMAP_TEST(i)) {
             BITMAP_SET(i);
             used_frames++;
+            alloc_hint = i + 1;
             return (uintptr_t)(i * PAGE_SIZE);
         }
     }
+
     return 0; /* Out of memory */
 }
 

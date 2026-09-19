@@ -2,6 +2,18 @@
 
 All releases, newest first. Module scopes: `boot` `kernel` `drivers` `gui` `libs` `userland` `tools` `tests`. See the [Versioning Protocol](wiki/01-governance/versioning.html) for the rules.
 
+## v0.2.5-pmm (2026-09-19) — stage: PMM Fast-Path Allocation
+Milestone update: Physical memory allocator accelerated from bit-by-bit linear scan to 64-bit word scanning with hint-based restart.
+### kernel
+- `pmm_alloc_frame()` rewritten as 3-phase 64-bit word scan (`kernel/core/pmm.c`)
+- Full-word rejection: occupied 64-frame regions skipped in a single compare (`word == ~0ULL`)
+- First-free-bit located with `__builtin_ctzll` (compiles to one `tzcnt`/`bsf` instruction)
+- Added `alloc_hint` cursor: repeated allocations resume from last allocation instead of frame 0
+- `pmm_mark_free()` lowers the hint when a frame below it is freed (hint correctness)
+- Early-exit when `used_frames == total_frames` (exhausted memory)
+### docs
+- Added `docs/wiki/04-internals/PMM.md` explaining bitmap layout, 3-phase scan, hint mechanics in simplest form
+
 ## v0.2.4-pf (2026-09-19) — stage: Page Fault Exception Handler
 Milestone update: Hardware `#PF` vector 14 exception handling, CR2 address decoding, and live interactive recovery.
 ### kernel
