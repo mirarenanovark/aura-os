@@ -181,6 +181,4 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
 
         __asm__ __volatile__("hlt");
     }
-        __asm__ __volatile__("hlt");
-    }
 }
