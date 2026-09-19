@@ -35,12 +35,13 @@
 
 /* Progress Bar Characters */
 #define TUI_BAR_FULL        219   /* █ */
+#define TUI_BAR_LIGHT       176   /* ░ (dim track behind the bar) */
 #define TUI_BAR_75          178   /* ▓ */
 #define TUI_BAR_50          177   /* ▒ */
 #define TUI_BAR_25          176   /* ░ */
 
-/* Draw a box with optional title and border style */
-void tui_draw_box(int x, int y, int w, int h, uint8_t color, const char *title, int double_border);
+/* Draw a box with optional title and border style (separate border/title colors) */
+void tui_draw_box(int x, int y, int w, int h, uint8_t border_color, uint8_t title_color, const char *title, int double_border);
 
 /* Draw a horizontal progress bar */
 void tui_draw_bar(int x, int y, int width, uint32_t val, uint32_t max, uint8_t fg_fill, uint8_t fg_empty);

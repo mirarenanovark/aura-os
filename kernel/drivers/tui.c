@@ -23,10 +23,11 @@
 #include <aura/vga.h>
 #include <stdarg.h>
 
-/* VGA cell write (for custom layouts) */
+/* Direct VGA text memory access */
+volatile uint16_t *const vga_ptr = VGA_MEMORY;
 void tui_putc_at(int x, int y, char c, uint8_t color) {
     if (x < 0 || x >= VGA_WIDTH || y < 0 || y >= VGA_HEIGHT) return;
-    VGA_MEMORY[y * VGA_WIDTH + x] = (uint16_t)((uint16_t)(unsigned char)c | ((uint16_t)color << 8));
+    vga_ptr[y * VGA_WIDTH + x] = (uint16_t)((uint16_t)(unsigned char)c | ((uint16_t)color << 8));
 }
 
 void tui_puts_at(int x, int y, const char *str, uint8_t color) {
@@ -89,7 +90,7 @@ void tui_printf_at(int x, int y, uint8_t color, const char *fmt, ...) {
     va_end(args);
 }
 
-void tui_draw_box(int x, int y, int w, int h, uint8_t color, const char *title, int double_border) {
+void tui_draw_box(int x, int y, int w, int h, uint8_t border_color, uint8_t title_color, const char *title, int double_border) {
     if (w < 2 || h < 2) return;
     
     unsigned char tl, tr, bl, br, h_line, v_line;
@@ -111,11 +112,11 @@ void tui_draw_box(int x, int y, int w, int h, uint8_t color, const char *title, 
     }
     
     /* Top border */
-    tui_putc_at(x, y, (char)tl, color);
+    tui_putc_at(x, y, (char)tl, border_color);
     for (int i = 1; i < w - 1; i++) {
-        tui_putc_at(x + i, y, (char)h_line, color);
+        tui_putc_at(x + i, y, (char)h_line, border_color);
     }
-    tui_putc_at(x + w - 1, y, (char)tr, color);
+    tui_putc_at(x + w - 1, y, (char)tr, border_color);
     
     /* Title */
     if (title) {
@@ -124,28 +125,28 @@ void tui_draw_box(int x, int y, int w, int h, uint8_t color, const char *title, 
         while (*t++) title_len++;
         
         int title_x = x + 2;
-        tui_putc_at(title_x++, y, ' ', color);
-        for (int i = 0; i < title_len && title_x < x + w - 1; i++) {
-            tui_putc_at(title_x++, y, title[i], color);
+        tui_putc_at(title_x++, y, ' ', border_color);
+        for (int i = 0; i < title_len && title_x < x + w - 2; i++) {
+            tui_putc_at(title_x++, y, title[i], title_color);
         }
-        tui_putc_at(title_x, y, ' ', color);
+        tui_putc_at(title_x, y, ' ', border_color);
     }
     
     /* Middle rows */
     for (int j = 1; j < h - 1; j++) {
-        tui_putc_at(x, y + j, (char)v_line, color);
+        tui_putc_at(x, y + j, (char)v_line, border_color);
         for (int i = 1; i < w - 1; i++) {
-            tui_putc_at(x + i, y + j, ' ', color);
+            tui_putc_at(x + i, y + j, ' ', 0x07);
         }
-        tui_putc_at(x + w - 1, y + j, (char)v_line, color);
+        tui_putc_at(x + w - 1, y + j, (char)v_line, border_color);
     }
     
     /* Bottom border */
-    tui_putc_at(x, y + h - 1, (char)bl, color);
+    tui_putc_at(x, y + h - 1, (char)bl, border_color);
     for (int i = 1; i < w - 1; i++) {
-        tui_putc_at(x + i, y + h - 1, (char)h_line, color);
+        tui_putc_at(x + i, y + h - 1, (char)h_line, border_color);
     }
-    tui_putc_at(x + w - 1, y + h - 1, (char)br, color);
+    tui_putc_at(x + w - 1, y + h - 1, (char)br, border_color);
 }
 
 void tui_draw_bar(int x, int y, int width, uint32_t val, uint32_t max, uint8_t fg_fill, uint8_t fg_empty) {
@@ -158,34 +159,34 @@ void tui_draw_bar(int x, int y, int width, uint32_t val, uint32_t max, uint8_t f
         if (i < (int)filled) {
             tui_putc_at(x + i, y, (char)TUI_BAR_FULL, fg_fill);
         } else {
-            tui_putc_at(x + i, y, (char)TUI_BAR_FULL, fg_empty);
+            tui_putc_at(x + i, y, (char)TUI_BAR_LIGHT, fg_empty);
         }
     }
 }
 
 void tui_draw_header(const char *title, const char *subtitle) {
-    uint8_t color = 0x1F; /* White on blue (inverted look) */
+    uint8_t bg_color = 0x1F; /* White on Dark Blue banner */
     
     for (int x = 0; x < VGA_WIDTH; x++) {
-        tui_putc_at(x, 0, ' ', color);
+        tui_putc_at(x, 0, ' ', bg_color);
     }
     
-    tui_puts_at(1, 0, title, color);
+    tui_puts_at(1, 0, title, 0x1E); /* Yellow bold title on Dark Blue */
     
     if (subtitle) {
         int sub_len = 0;
         const char *s = subtitle;
         while (*s++) sub_len++;
-        tui_puts_at(VGA_WIDTH - sub_len - 1, 0, subtitle, color);
+        tui_puts_at(VGA_WIDTH - sub_len - 2, 0, subtitle, 0x1F);
     }
 }
 
 void tui_draw_footer(const char *hints) {
-    uint8_t color = 0x1F; /* White on blue */
+    uint8_t bg_color = 0x1F; /* White on Dark Blue */
     
     for (int x = 0; x < VGA_WIDTH; x++) {
-        tui_putc_at(x, VGA_HEIGHT - 1, ' ', color);
+        tui_putc_at(x, VGA_HEIGHT - 1, ' ', bg_color);
     }
     
-    tui_puts_at(1, VGA_HEIGHT - 1, hints, color);
+    tui_puts_at(2, VGA_HEIGHT - 1, hints, 0x1A); /* Light green accents on dark blue */
 }

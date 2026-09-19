@@ -154,9 +154,21 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     dashboard_init();
     dashboard_render();
 
-    // [AURA_FLOW: KERNEL_IDLE] Low-power idle loop
+    /* Live dashboard refresh loop: redraw every 200ms without flickering */
+    uint64_t last_refresh = pit_get_ticks();
     while (1) {
+        uint64_t now = pit_get_ticks();
+
+        // [AURA_FLOW: KERNEL_IDLE] Low-power idle loop
         sysmon_set_idle();
+
+        if (now - last_refresh >= 200) {
+            dashboard_render();
+            last_refresh = now;
+        }
+
+        __asm__ __volatile__("hlt");
+    }
         __asm__ __volatile__("hlt");
     }
 }
