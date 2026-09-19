@@ -2,6 +2,16 @@
 
 All releases, newest first. Module scopes: `boot` `kernel` `drivers` `gui` `libs` `userland` `tools` `tests`. See the [Versioning Protocol](wiki/01-governance/versioning.html) for the rules.
 
+## v0.2.3-menu (2026-09-19) — stage: Interactive Boot Menu & Minimal Command Prompt
+Milestone update: Lightweight boot menu, PS/2 keyboard driver (IRQ1), and interactive command shell.
+### kernel
+- Interactive boot shell (`kernel/core/menu.c`, `kernel/include/aura/menu.h`) with live CPU/Memory telemetry and scrolling command log
+- Command parser supporting `help`, `info`, `mem`, `clear`, `dashboard`, `panic`, and `halt`
+### drivers
+- PS/2 Keyboard Driver (`kernel/drivers/keyboard.c`, `kernel/include/aura/keyboard.h`) on IRQ1 (vector 33) with US QWERTY scancode set 1 decoding and ring buffer
+### docs
+- Updated release notes and portal download generator
+
 ## v0.2.2-zram (2026-09-19) — stage: zRAM In-Memory Compression
 Milestone update: Lightweight Apple vm_compressor-style in-memory page compressor and pool allocator.
 ### kernel
