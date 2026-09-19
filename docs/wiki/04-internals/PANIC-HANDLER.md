@@ -1,156 +1,76 @@
----
-layout: default
-title: Panic Handler
----
-
 # Panic Handler
 
-When the kernel hits an unrecoverable condition, `aura_panic()` takes over the machine and halts it safely.
+## Overview
 
----
+`aura_panic()` is the kernel's fatal error handler. It disables interrupts, prints a diagnostic banner to both VGA and serial, then halts the CPU permanently.
 
 ## Call Path
 
 ```
-AURA_PANIC("message")
-  │
-  │  Expands to:  aura_panic("message", __FILE__, __LINE__)
-  │
-  v
-aura_panic(msg, file, line)    kernel/core/panic.c
-  │
-  ├─ cli                       Disable CPU interrupts (NMI-proof halt)
-  │
-  ├─ VGA output                White on red, full-screen clear
-  │   ├─ "=== KERNEL PANIC ==="
-  │   ├─ msg                   Caller's error string
-  │   ├─ "  at file:line"      Source location (if file != NULL)
-  │   └─ "System halted."
-  │
-  ├─ Serial output             Same text to COM1 (115200 8N1)
-  │   ├─ "\r\n=== KERNEL PANIC ===\r\n"
-  │   ├─ msg
-  │   ├─ "  at file:line"
-  │   └─ "System halted.\r\n"
-  │
-  └─ for (;;) { hlt; }        Halt loop — CPU sleeps until NMI
+aura_panic(msg, file, line)         [kernel/core/panic.c]
+    │
+    ├─ cli                          Disable all maskable interrupts
+    │
+    ├─ VGA output (0xB8000)
+    │   ├─ vga_set_color(WHITE, RED)
+    │   ├─ vga_clear()              Fill screen with white-on-red
+    │   ├─ vga_puts("=== KERNEL PANIC ===")
+    │   ├─ vga_puts(msg)
+    │   ├─ vga_puts("at file:line") (if file != NULL)
+    │   └─ vga_puts("System halted.")
+    │
+    ├─ Serial output (COM1 0x3F8)
+    │   ├─ serial_puts("\r\n=== KERNEL PANIC ===\r\n")
+    │   ├─ serial_puts(msg)
+    │   ├─ serial_printf("at file:line") (if file != NULL)
+    │   └─ serial_puts("System halted.\r\n")
+    │
+    └─ for (;;) { hlt; }            Infinite halt loop — CPU stops
 ```
 
----
+## VGA White-on-Red
 
-## VGA White-on-Red Display
-
-`aura_panic()` owns the full screen. It calls `vga_clear()` to blank all 80×25 text cells, then sets the color attribute to:
-
-- **Foreground:** White (`VGA_COLOR_WHITE` = 0x0F)
-- **Background:** Red (`VGA_COLOR_RED` = 0x04)
-
-Every character cell is white-on-red. The banner is:
+The panic handler sets the VGA text attribute to **white foreground (0xF) on red background (0x4)**:
 
 ```
-╔══════════════════════════╗
-║  === KERNEL PANIC ===    ║
-║                          ║
-║  <error message>         ║
-║  at <file>:<line>        ║
-║                          ║
-║  System halted.           ║
-╚══════════════════════════╝
+Attribute byte = (RED << 4) | WHITE = 0x4F
 ```
 
-The color is applied via `vga_set_color()` which writes to VGA attribute controller registers (`0x3C0`/`0x3C1`).
-
----
+`vga_clear()` fills all 2000 cells (80×25) with space characters and this attribute, producing a solid red screen. The panic message is then written starting at position (0,0).
 
 ## Serial Output
 
-The same panic message is written to COM1 (`serial_puts`). This is critical for:
+After `serial_init(COM1, 115200)` runs during boot, the COM1 UART at I/O port `0x3F8` is ready. The panic handler uses `serial_puts()` and `serial_printf()` to transmit the same banner over serial, visible in:
 
-- **QEMU debugging** — output appears on `-serial stdio` even when the VGA display is not visible.
-- **Headless servers** — panic messages reach a serial console log.
-- **Automated testing** — CI pipelines can grep serial output for `KERNEL PANIC`.
+- QEMU: `-serial stdio` or `-serial file:serial.log`
+- Real hardware: connected terminal or log capture device
 
-Serial uses `\r\n` line endings (required by most terminal emulators).
+No polling for transmitter-ready — serial writes are blocking (spin on LSR bit 5).
 
----
+## cli; hlt Semantics
 
-## `cli; hlt` Semantics
+```
+cli     — Clear Interrupt Flag (RFLAGS.IF = 0)
+        — All maskable interrupts (PIC, PIT, keyboard) are masked
+        — NMIs and SMI still delivered (not maskable)
 
-The halt sequence is intentional and structured:
-
-```c
-/* 1. cli — Clear Interrupt Flag */
-/*    - Disables all maskable interrupts (PIC, PIT, keyboard) */
-/*    - CPU will not service IRQs or CPU exceptions 0x00-0x1F */
-/*    - NMI (Non-Maskable Interrupt, vector 2) still fires */
-
-/* 2. for (;;) { hlt; } */
-/*    - HLT puts the CPU in a low-power wait state */
-/*    - Wakes on NMI or SMI (System Management Interrupt) */
-/*    - Since interrupts are disabled, normal wake = impossible */
-/*    - The loop re-executes HLT after any NMI */
+hlt     — Halt CPU until next interrupt or reset
+        — With IF=0, hlt blocks until NMI or hardware reset
+        — CPU enters low-power C1 state
 ```
 
-This is the only safe halt pattern:
+The infinite loop `for (;;) { hlt; }` guarantees the CPU never executes any further instructions. A hardware reset or power cycle is required to recover.
 
-| Pattern | Problem |
-|---------|---------|
-| `cli` alone | CPU busy-spins, wastes power, may trigger watchdog |
-| `hlt` alone (no `cli`) | PIT IRQ0 wakes CPU every 1ms, kernel re-enters interrupt handler |
-| `cli; hlt` (no loop) | NMI wakes CPU, code falls through to whatever is after |
+## Panic Trigger Points
 
-The `for (;;)` loop guards against NMI recovery. After an NMI (e.g., hardware watchdog, memory parity error), the CPU re-executes `hlt` and goes back to sleep.
+| Trigger                        | Example                              |
+|--------------------------------|--------------------------------------|
+| Unhandled CPU exception        | Double fault, page fault, GPF        |
+| Assertion failure              | `ASSERT(condition)` macro            |
+| Out of memory (non-recoverable)| PMM allocation fails critically      |
+| Stack corruption detected      | Canary mismatch                      |
+| Subsystem init failure         | IDT or GDT setup fails               |
 
----
+## Source
 
-## The `AURA_PANIC` Macro
-
-Defined in `kernel/include/aura/panic.h`:
-
-```c
-#define AURA_PANIC(msg) aura_panic((msg), __FILE__, __LINE__)
-```
-
-The macro captures `__FILE__` and `__LINE__` at the call site. This is a compile-time constant, so:
-
-- No runtime overhead for location capture.
-- The file string lives in `.rodata` (read-only memory, not stack).
-- Callers never forget to pass location info.
-
----
-
-## Panic Callers
-
-Panic is used for conditions where the kernel cannot continue safely. Typical triggers:
-
-- **PMM corruption** — bitmap sanity check failed, double-free detected
-- **VMM violation** — page table walk reached an invalid state
-- **Stack overflow** — guard page hit (future)
-- **Assertion failures** — invariant broken, kernel state inconsistent
-
-Panic is **not** used for user-space errors (those get syscall error codes), recoverable faults (page faults map new pages), or expected conditions (no free frames → wait/kill).
-
----
-
-## Design Constraints
-
-The panic handler must work in the worst possible conditions:
-
-| Constraint | Design Choice |
-|------------|---------------|
-| No dynamic allocation | `vga_puts()` writes directly to VGA memory, no heap needed |
-| No `printf` dependency | Line number uses inline `itoa` (base-10 loop, no libc) |
-| No interrupt reliance | `cli` disables before any I/O — panic works even if IDT is corrupt |
-| Dual output path | VGA + serial — at least one will be visible in any environment |
-| Zero stack depth | Shallow call chain — panic works even on a corrupted stack |
-
----
-
-## Source Files
-
-| File | Role |
-|------|------|
-| `kernel/include/aura/panic.h` | `aura_panic()` declaration, `AURA_PANIC` macro |
-| `kernel/core/panic.c` | Implementation: VGA clear, serial write, `cli; hlt` loop |
-| `kernel/include/aura/vga.h` | `vga_set_color()`, `vga_clear()`, `vga_puts()` |
-| `kernel/include/aura/serial.h` | `serial_puts()`, `serial_putc()`, `serial_printf()` |
+`kernel/core/panic.c` — `aura_panic()` in `kernel/include/aura/panic.h`
