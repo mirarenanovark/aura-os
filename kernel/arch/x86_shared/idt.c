@@ -109,13 +109,13 @@ static void pic_remap(int offset1, int offset2)
     outb(PIC2_DATA, ICW4_8086);
     io_wait();
 
-    /* Mask all IRQs except PIT (IRQ0) and cascade (IRQ2) on Master.
+    /* Mask all IRQs except PIT (IRQ0), Keyboard (IRQ1), and cascade (IRQ2) on Master.
      * Mask all IRQs on Slave.
-     * Master: bit 0 is IRQ0, bit 2 is IRQ2.
+     * Master: bit 0 is IRQ0, bit 1 is IRQ1, bit 2 is IRQ2.
      * Mask register: 0 = unmasked (enabled), 1 = masked (disabled).
-     * We want IRQ0 and IRQ2 unmasked: ~(0x01 | 0x04) = ~0x05 = 0xFA
+     * We want IRQ0, IRQ1, and IRQ2 unmasked: ~(0x01 | 0x02 | 0x04) = ~0x07 = 0xF8
      */
-    outb(PIC1_DATA, 0xFA);
+    outb(PIC1_DATA, 0xF8);
     outb(PIC2_DATA, 0xFF);
 }
 

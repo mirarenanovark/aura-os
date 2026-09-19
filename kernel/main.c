@@ -41,6 +41,8 @@
 #include <aura/zram.h>
 #include <aura/sysmon.h>
 #include <aura/dashboard.h>
+#include <aura/menu.h>
+#include <aura/keyboard.h>
 
 static struct aura_boot_info boot_info;
 
@@ -140,6 +142,9 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     serial_printf(COM1, "[OK] System monitor started\n");
     vga_printf("[OK] System monitor started\n");
 
+    /* Initialize PS/2 keyboard driver */
+    keyboard_init();
+
     // [AURA_FLOW: KERNEL_INIT] Step 11: Enable CPU interrupts & verify delivery
     __asm__ __volatile__("sti");
 
@@ -161,21 +166,27 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
         __asm__ __volatile__("pause");
     }
 
-    // [AURA_FLOW: KERNEL_INIT] Step 12: Render btop-style monitoring dashboard
-    // [AURA_CONNECTS: MONITOR_DASHBOARD -> dashboard_render]
-    dashboard_init();
-    dashboard_render();
+    // [AURA_FLOW: KERNEL_INIT] Step 12: Render interactive boot menu & command prompt
+    menu_init();
+    menu_render();
 
-    /* Live dashboard refresh loop: redraw every 200ms without flickering */
+    /* Interactive keyboard polling and live screen update loop */
     uint64_t last_refresh = pit_get_ticks();
     while (1) {
-        uint64_t now = pit_get_ticks();
+        /* Process all pending keystrokes */
+        while (keyboard_has_key()) {
+            char c = keyboard_getchar();
+            if (c) {
+                menu_handle_key(c);
+            }
+        }
 
+        uint64_t now = pit_get_ticks();
         // [AURA_FLOW: KERNEL_IDLE] Low-power idle loop
         sysmon_set_idle();
 
         if (now - last_refresh >= 200) {
-            dashboard_render();
+            menu_update();
             last_refresh = now;
         }
 
