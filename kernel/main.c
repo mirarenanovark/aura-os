@@ -110,12 +110,18 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
         __asm__ __volatile__("pause");
     }
 
-    /* Render the btop-style dashboard */
+    /* Render the btop-style dashboard and enter interactive refresh loop */
     dashboard_init();
     dashboard_render();
 
-    /* System idle loop */
+    /* Live dashboard refresh loop: redraw every 200ms without flickering */
+    uint64_t last_refresh = pit_get_ticks();
     while (1) {
+        uint64_t now = pit_get_ticks();
+        if (now - last_refresh >= 200) {
+            dashboard_render();
+            last_refresh = now;
+        }
         __asm__ __volatile__("hlt");
     }
 }
