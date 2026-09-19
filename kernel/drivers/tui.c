@@ -21,6 +21,7 @@
 
 #include <aura/tui.h>
 #include <aura/vga.h>
+#include <aura/theme.h>
 #include <stdarg.h>
 
 /* Direct VGA text memory access */
@@ -165,28 +166,32 @@ void tui_draw_bar(int x, int y, int width, uint32_t val, uint32_t max, uint8_t f
 }
 
 void tui_draw_header(const char *title, const char *subtitle) {
-    uint8_t bg_color = 0x1F; /* White on Dark Blue banner */
+    /* Top banner: Dark Grey header bar with Cyan accent and White text */
+    uint8_t bg_color = (uint8_t)((COLOR_BORDER << 4) | COLOR_TEXT);
     
     for (int x = 0; x < VGA_WIDTH; x++) {
         tui_putc_at(x, 0, ' ', bg_color);
     }
     
-    tui_puts_at(1, 0, title, 0x1E); /* Yellow bold title on Dark Blue */
+    /* Primary Cyan bold title on border background */
+    tui_puts_at(1, 0, title, (uint8_t)((COLOR_BORDER << 4) | COLOR_PRIMARY));
     
     if (subtitle) {
         int sub_len = 0;
         const char *s = subtitle;
         while (*s++) sub_len++;
-        tui_puts_at(VGA_WIDTH - sub_len - 2, 0, subtitle, 0x1F);
+        /* Neon Green badge text for version */
+        tui_puts_at(VGA_WIDTH - sub_len - 2, 0, subtitle, (uint8_t)((COLOR_BORDER << 4) | COLOR_SUCCESS));
     }
 }
 
 void tui_draw_footer(const char *hints) {
-    uint8_t bg_color = 0x1F; /* White on Dark Blue */
+    /* Footer bar: Dark Grey bar matching the portal footer */
+    uint8_t bg_color = (uint8_t)((COLOR_BORDER << 4) | COLOR_TEXT);
     
     for (int x = 0; x < VGA_WIDTH; x++) {
         tui_putc_at(x, VGA_HEIGHT - 1, ' ', bg_color);
     }
     
-    tui_puts_at(2, VGA_HEIGHT - 1, hints, 0x1A); /* Light green accents on dark blue */
+    tui_puts_at(2, VGA_HEIGHT - 1, hints, (uint8_t)((COLOR_BORDER << 4) | COLOR_WARN));
 }

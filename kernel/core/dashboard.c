@@ -24,6 +24,7 @@
 #include <aura/dashboard.h>
 #include <aura/tui.h>
 #include <aura/vga.h>
+#include <aura/theme.h>
 #include <aura/sysmon.h>
 #include <aura/pit.h>
 #include <aura/pmm.h>
@@ -80,18 +81,18 @@ static void draw_cpu_box(void) {
     sysmon_get_stats(&stats);
 
     /* Cyan border, bright white title */
-    tui_draw_box(0, 1, 40, 8, 0x0B, 0x0F, " cpu ", 0);
+    tui_draw_box(0, 1, 40, 8, COLOR_PRIMARY, COLOR_TEXT, " cpu ", COLOR_PRIMARY);
 
-    tui_printf_at(2, 3, 0x0F, "Load");
-    tui_printf_at(8, 3, 0x0B, "%u%%", (uint32_t)stats.cpu_load_pct);
-    tui_printf_at(20, 3, 0x0F, "Ticks");
-    tui_printf_at(27, 3, 0x0B, "%u", (uint32_t)pit_get_ticks());
+    tui_printf_at(2, 3, COLOR_TEXT, "Load");
+    tui_printf_at(8, 3, COLOR_SUCCESS, "%u%%", (uint32_t)stats.cpu_load_pct);
+    tui_printf_at(20, 3, COLOR_TEXT, "Ticks");
+    tui_printf_at(27, 3, COLOR_PRIMARY, "%u", (uint32_t)pit_get_ticks());
 
-    /* Bar: bright green fill over a dim track */
-    tui_draw_bar(2, 5, 36, stats.cpu_load_pct, 100, 0x0A, 0x08);
+    /* Bar: bright green fill over dim track */
+    tui_draw_bar(2, 5, 36, stats.cpu_load_pct, 100, COLOR_SUCCESS, COLOR_BORDER);
 
     /* Percentage at the end of the bar */
-    tui_printf_at(17, 6, 0x0A, "%u%%", (uint32_t)stats.cpu_load_pct);
+    tui_printf_at(17, 6, COLOR_SUCCESS, "%u%%", (uint32_t)stats.cpu_load_pct);
 }
 
 static void draw_memory_box(void) {
@@ -99,23 +100,23 @@ static void draw_memory_box(void) {
     sysmon_get_stats(&stats);
 
     /* Magenta border, bright white title */
-    tui_draw_box(40, 1, 40, 8, 0x0D, 0x0F, " mem ", 0);
+    tui_draw_box(40, 1, 40, 8, COLOR_MAGENTA, COLOR_TEXT, " mem ", COLOR_MAGENTA);
 
     uint32_t total_mb = stats.ram_total_kb / 1024;
     uint32_t used_mb = stats.ram_used_kb / 1024;
 
-    tui_printf_at(42, 3, 0x0F, "RAM");
-    tui_printf_at(47, 3, 0x0D, "%u/%u MB", used_mb, total_mb);
-    tui_printf_at(42, 4, 0x0F, "Heap");
-    tui_printf_at(48, 4, 0x0D, "%u KB used", (uint32_t)(heap_get_used() / 1024));
-    tui_printf_at(42, 5, 0x0F, "zRAM");
-    tui_printf_at(48, 5, 0x0A, "%uKB saved (%u.%ux)",
+    tui_printf_at(42, 3, COLOR_TEXT, "RAM");
+    tui_printf_at(47, 3, COLOR_MAGENTA, "%u/%u MB", used_mb, total_mb);
+    tui_printf_at(42, 4, COLOR_TEXT, "Heap");
+    tui_printf_at(48, 4, COLOR_MAGENTA, "%u KB used", (uint32_t)(heap_get_used() / 1024));
+    tui_printf_at(42, 5, COLOR_TEXT, "zRAM");
+    tui_printf_at(48, 5, COLOR_SUCCESS, "%uKB saved (%u.%ux)",
                   stats.zram_saved_kb,
                   stats.zram_ratio_x100 / 100,
                   (stats.zram_ratio_x100 % 100) / 10);
 
-    /* Bar: bright magenta fill over a dim track */
-    tui_draw_bar(42, 7, 36, stats.ram_used_kb, stats.ram_total_kb, 0x0D, 0x08);
+    /* Bar: bright magenta fill over dim track */
+    tui_draw_bar(42, 7, 36, stats.ram_used_kb, stats.ram_total_kb, COLOR_MAGENTA, COLOR_BORDER);
 }
 
 static void draw_process_table(void) {
@@ -123,11 +124,12 @@ static void draw_process_table(void) {
     sysmon_get_stats(&stats);
 
     /* Yellow border, bright white title */
-    tui_draw_box(0, 9, 80, 14, 0x0E, 0x0F, " tasks ", 0);
+    tui_draw_box(0, 9, 80, 14, COLOR_WARN, COLOR_TEXT, " tasks ", COLOR_WARN);
 
     /* Header row: black text on bright cyan strip */
-    tui_printf_at(2, 11, 0xB0, "PID  NAME             STATE  CPU%   MEM(KB) PRI");
-    for (int x = 50; x < 78; x++) tui_putc_at(x, 11, ' ', 0xB0);
+    uint8_t th_color = (uint8_t)((COLOR_PRIMARY << 4) | COLOR_BG);
+    tui_printf_at(2, 11, th_color, "PID  NAME             STATE  CPU%   MEM(KB) PRI");
+    for (int x = 50; x < 78; x++) tui_putc_at(x, 11, ' ', th_color);
 
     /* Live values for the static kernel tasks */
     processes[0].cpu_pct = (uint8_t)(100 - stats.cpu_load_pct);
@@ -135,7 +137,7 @@ static void draw_process_table(void) {
 
     for (int i = 0; i < (int)PROCESS_COUNT && i < 10; i++) {
         /* Alternating rows: white / bright cyan — always readable on black */
-        uint8_t row_color = (i % 2 == 0) ? 0x0F : 0x0B;
+        uint8_t row_color = (i % 2 == 0) ? COLOR_TEXT : COLOR_PRIMARY;
         tui_printf_at(2, 12 + i, row_color, "%-4d %-16s %-6s %-6u %-7u %-3d",
                       processes[i].pid,
                       processes[i].name,
@@ -156,8 +158,8 @@ void dashboard_render(void) {
     char uptime_str[9];
     format_uptime(uptime_str, stats.uptime_ms);
 
-    /* Full-width header: bright yellow title on blue band */
-    tui_draw_header(" AuraOS v0.2.3 ", uptime_str);
+    /* Full-width header */
+    tui_draw_header(" AuraOS v0.3.1 ", uptime_str);
 
     draw_cpu_box();
     draw_memory_box();

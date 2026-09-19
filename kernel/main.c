@@ -37,6 +37,7 @@
 #include <aura/pmm.h>
 #include <aura/multiboot2.h>
 #include <aura/vga.h>
+#include <aura/theme.h>
 #include <aura/heap.h>
 #include <aura/zram.h>
 #include <aura/sysmon.h>
@@ -53,18 +54,18 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
     // [AURA_FLOW: KERNEL_INIT] Step 1: Initialize VGA text console
     // [AURA_CONNECTS: DRIVER_VGA_CONSOLE -> vga_init]
     vga_init();
-    vga_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK);
+    vga_set_color(COLOR_PRIMARY, COLOR_BG);
     vga_printf("========================================\n");
-    vga_printf("    AuraOS Kernel v0.2.3\n");
+    vga_printf("    AuraOS Kernel v0.3.1\n");
     vga_printf("  Clean. Simple. Small. Fast. Direct.\n");
     vga_printf("========================================\n\n");
-    vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+    vga_set_color(COLOR_TEXT, COLOR_BG);
 
     // [AURA_FLOW: KERNEL_INIT] Step 2: Initialize COM1 UART serial logger
     // [AURA_CONNECTS: SERIAL_UART16550 -> serial_init]
     serial_init(COM1, 115200);
     serial_printf(COM1, "\n\n========================================\n");
-    serial_printf(COM1, "    AuraOS Kernel v0.2.3\n");
+    serial_printf(COM1, "    AuraOS Kernel v0.3.1\n");
     serial_printf(COM1, "  Clean. Simple. Small. Fast. Direct.\n");
     serial_printf(COM1, "========================================\n\n");
 

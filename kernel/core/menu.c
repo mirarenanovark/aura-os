@@ -10,6 +10,7 @@
 #include <aura/menu.h>
 #include <aura/tui.h>
 #include <aura/vga.h>
+#include <aura/theme.h>
 #include <aura/sysmon.h>
 #include <aura/pit.h>
 #include <aura/pmm.h>
@@ -231,49 +232,49 @@ void menu_render(void) {
         return;
     }
 
-    /* Top banner: bright yellow on blue */
-    tui_draw_header(" AuraOS Boot Menu & Shell ", "v0.2.3");
+    /* Top banner: portal-style header (Cyan title, Green version badge) */
+    tui_draw_header(" AuraOS Boot Menu & Shell ", "v0.3.1");
 
     /* Live Telemetry Bar */
     struct sysmon_stats stats;
     sysmon_get_stats(&stats);
 
-    tui_draw_box(0, 1, 80, 5, 0x0B, 0x0F, " System Status ", 0);
-    tui_printf_at(2, 2, 0x0F, "CPU Load: ");
-    tui_printf_at(12, 2, 0x0A, "%u%%", (uint32_t)stats.cpu_load_pct);
-    tui_printf_at(20, 2, 0x0F, "Uptime: ");
-    tui_printf_at(28, 2, 0x0B, "%u s", (uint32_t)(stats.uptime_ms / 1000));
-    tui_printf_at(40, 2, 0x0F, "Ticks: ");
-    tui_printf_at(47, 2, 0x0B, "%u", (uint32_t)pit_get_ticks());
-    tui_printf_at(60, 2, 0x0F, "PIT: ");
-    tui_printf_at(65, 2, 0x0E, "1000 Hz");
+    tui_draw_box(0, 1, 80, 5, COLOR_PRIMARY, COLOR_TEXT, " System Status ", COLOR_PRIMARY);
+    tui_printf_at(2, 2, COLOR_TEXT, "CPU Load: ");
+    tui_printf_at(12, 2, COLOR_SUCCESS, "%u%%", (uint32_t)stats.cpu_load_pct);
+    tui_printf_at(20, 2, COLOR_TEXT, "Uptime: ");
+    tui_printf_at(28, 2, COLOR_PRIMARY, "%u s", (uint32_t)(stats.uptime_ms / 1000));
+    tui_printf_at(40, 2, COLOR_TEXT, "Ticks: ");
+    tui_printf_at(47, 2, COLOR_PRIMARY, "%u", (uint32_t)pit_get_ticks());
+    tui_printf_at(60, 2, COLOR_TEXT, "PIT: ");
+    tui_printf_at(65, 2, COLOR_WARN, "1000 Hz");
 
-    tui_printf_at(2, 3, 0x0F, "RAM Free: ");
-    tui_printf_at(12, 3, 0x0D, "%u/%u MB", (uint32_t)(stats.ram_used_kb / 1024), (uint32_t)(stats.ram_total_kb / 1024));
-    tui_printf_at(30, 3, 0x0F, "Heap: ");
-    tui_printf_at(36, 3, 0x0D, "%u KB", (uint32_t)(heap_get_used() / 1024));
-    tui_printf_at(50, 3, 0x0F, "zRAM: ");
-    tui_printf_at(56, 3, 0x0D, "Active (RLE)");
+    tui_printf_at(2, 3, COLOR_TEXT, "RAM Free: ");
+    tui_printf_at(12, 3, COLOR_MAGENTA, "%u/%u MB", (uint32_t)(stats.ram_used_kb / 1024), (uint32_t)(stats.ram_total_kb / 1024));
+    tui_printf_at(30, 3, COLOR_TEXT, "Heap: ");
+    tui_printf_at(36, 3, COLOR_MAGENTA, "%u KB", (uint32_t)(heap_get_used() / 1024));
+    tui_printf_at(50, 3, COLOR_TEXT, "zRAM: ");
+    tui_printf_at(56, 3, COLOR_MAGENTA, "Active (RLE)");
 
     /* Log Output Window */
-    tui_draw_box(0, 6, 80, 14, 0x0E, 0x0F, " Console Output ", 0);
+    tui_draw_box(0, 6, 80, 14, COLOR_BORDER, COLOR_TEXT, " Console Output ", COLOR_WARN);
     for (int i = 0; i < LOG_LINES; i++) {
         if (i < log_count) {
-            tui_puts_at(2, 8 + i, log_history[i], 0x0F);
+            tui_puts_at(2, 8 + i, log_history[i], COLOR_TEXT);
             /* clear trailing line */
             int len = 0;
             while (log_history[i][len]) len++;
-            for (int x = 2 + len; x < 78; x++) tui_putc_at(x, 8 + i, ' ', 0x07);
+            for (int x = 2 + len; x < 78; x++) tui_putc_at(x, 8 + i, ' ', COLOR_DIM);
         } else {
-            for (int x = 2; x < 78; x++) tui_putc_at(x, 8 + i, ' ', 0x07);
+            for (int x = 2; x < 78; x++) tui_putc_at(x, 8 + i, ' ', COLOR_DIM);
         }
     }
 
     /* Command Prompt Box */
-    tui_draw_box(0, 20, 80, 3, 0x0A, 0x0F, " Command ", 0);
-    tui_printf_at(2, 21, 0x0A, "aura> %s", cmd_buf);
-    tui_putc_at(8 + cmd_len, 21, '_', 0x0E); /* blinking/yellow cursor */
-    for (int x = 9 + cmd_len; x < 78; x++) tui_putc_at(x, 21, ' ', 0x07);
+    tui_draw_box(0, 20, 80, 3, COLOR_SUCCESS, COLOR_TEXT, " Command ", COLOR_SUCCESS);
+    tui_printf_at(2, 21, COLOR_SUCCESS, "aura> %s", cmd_buf);
+    tui_putc_at(8 + cmd_len, 21, '_', COLOR_WARN); /* warn-yellow cursor */
+    for (int x = 9 + cmd_len; x < 78; x++) tui_putc_at(x, 21, ' ', COLOR_DIM);
 
     /* Footer hints */
     tui_draw_footer(" Type 'help' | Commands: info, mem, dashboard, panic, halt ");
@@ -284,9 +285,9 @@ void menu_update(void) {
         /* Update the live stats numbers without clearing the whole screen */
         struct sysmon_stats stats;
         sysmon_get_stats(&stats);
-        tui_printf_at(12, 2, 0x0A, "%u%% ", (uint32_t)stats.cpu_load_pct);
-        tui_printf_at(28, 2, 0x0B, "%u s  ", (uint32_t)(stats.uptime_ms / 1000));
-        tui_printf_at(47, 2, 0x0B, "%u   ", (uint32_t)pit_get_ticks());
+        tui_printf_at(12, 2, COLOR_SUCCESS, "%u%% ", (uint32_t)stats.cpu_load_pct);
+        tui_printf_at(28, 2, COLOR_PRIMARY, "%u s  ", (uint32_t)(stats.uptime_ms / 1000));
+        tui_printf_at(47, 2, COLOR_PRIMARY, "%u   ", (uint32_t)pit_get_ticks());
     } else {
         dashboard_render();
     }
