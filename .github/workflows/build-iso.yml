@@ -29,7 +29,10 @@ jobs:
 
       - name: Build AuraOS Kernel ELF & Bootable ISO
         run: |
-          make all
+          make all 2>&1 | tee /tmp/make.log
+          echo "--- full grub/xorriso output ---"
+          grub-mkrescue --version
+          exit ${PIPESTATUS[0]}
 
       - name: Verify Headless QEMU Boot & Serial Diagnostics
         run: |
