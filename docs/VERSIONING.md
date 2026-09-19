@@ -26,3 +26,8 @@ Each top-level module dir carries `MODULE_VERSION` (plain text, semver + short c
 ## 5. Current state (initialize from)
 - `VERSION` = `0.1.0-uart` (UART bring-up committed bcb376f = this stage's content).
 - Tag `v0.1.0-uart` on bcb376f, CHANGELOG seeded with all prior work (specs, docs site, UART).
+
+
+## Component Status States
+
+Every PRD/plan/module carries one of five states: `planned` (plan exists) -> `outlined` (advisor design complete) -> `coded` (implementation active) -> `tested` (passed test gates, evidence in 06-validation/) -> `completed` (shipped in a tagged release). States only move forward; `tested` requires evidence; `completed` requires a tag. Full definitions: docs/wiki/01-governance/status-states.md. State changes land in 00-index.md PRD map + doc frontmatter in the same commit.

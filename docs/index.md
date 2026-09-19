@@ -135,9 +135,10 @@ Phase 6: Core Application Suite & Release Hardening
 * 📜 [The Five Laws (`01-governance/philosophy.md`)](wiki/01-governance/philosophy.html) — Core laws and conflict resolution rules.
 * 🏛️ [ADR-001: Architecture Precedence (`02-architecture/ADR-001.md`)](wiki/02-architecture/ADR-001-normative-architecture.html) — Canonical system boundaries and tier definitions.
 
-### 1b. Releases & Versioning
+### 1b. Releases, Versioning & Status
 * 🏷️ [Changelog (`CHANGELOG.md`)](CHANGELOG.html) — Every version, stage by stage: what landed, which modules, which tag.
 * 📏 [Versioning Protocol (`docs/VERSIONING.md`)](wiki/01-governance/versioning.html) — VERSION + per-module `MODULE_VERSION` + stage-close gate (`tools/version.py check`).
+* 🚦 [Status States (`01-governance/status-states.md`)](wiki/01-governance/status-states.html) — planned → outlined → coded → tested → completed: definitions + evidence rules.
 
 ### 2. Frozen ABI & Syscall Contracts
 * 🔒 [ABI-001: Syscalls & Wire Conventions](wiki/03-contracts/ABI-001-syscalls.html) — Register layout and frozen syscall table.

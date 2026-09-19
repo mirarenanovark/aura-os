@@ -47,7 +47,7 @@ $(BUILD_DIR)/auraos.iso: $(BUILD_DIR)/auraos.elf boot/iso/boot/grub/grub.cfg
 	@mkdir -p $(ISO_DIR)/boot/grub
 	@cp $(BUILD_DIR)/auraos.elf $(ISO_DIR)/boot/auraos.elf
 	@cp boot/iso/boot/grub/grub.cfg $(ISO_DIR)/boot/grub/grub.cfg
-	@grub-mkrescue -o $(BUILD_DIR)/auraos.iso $(ISO_DIR) 2>/dev/null
+	grub-mkrescue -o $(BUILD_DIR)/auraos.iso $(ISO_DIR)
 
 run: $(BUILD_DIR)/auraos.iso
 	qemu-system-x86_64 -cdrom $(BUILD_DIR)/auraos.iso -serial stdio -display none -no-reboot
