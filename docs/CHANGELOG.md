@@ -2,6 +2,14 @@
 
 All releases, newest first. Module scopes: `boot` `kernel` `drivers` `gui` `libs` `userland` `tools` `tests`. See the [Versioning Protocol](wiki/01-governance/versioning.html) for the rules.
 
+## v0.2.1-tui (2026-09-19) — stage: TUI contrast + live refresh
+PATCH release: fixes washed-out dashboard colors and the frozen (render-once) display.
+### kernel
+- Hi-contrast palette: full-bright foregrounds (green/cyan/yellow/white) on black, no mid-grey text; header title yellow-on-blue
+- Dashboard now redraws every 200ms in the kernel idle loop — uptime, ticks, and CPU load update live instead of freezing after boot
+### drivers
+- tui_draw_box takes separate border + title colors; bars render over a dim `░` track instead of dark-grey `█`
+
 ## v0.2.0-core (2026-09-19) — stage: Core Infrastructure & TUI Dashboard
 Milestone upgrade: Full memory stack (PMM + doubly-linked heap), crash handler, CPU telemetry, VGA text console, and btop visual dashboard.
 ### kernel
