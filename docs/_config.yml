@@ -1,0 +1,17 @@
+title: AuraOS Documentation & Developer Wiki
+description: Ultra-Lightweight Freestanding C Operating System
+theme: jekyll-theme-cayman
+baseurl: /aura-os
+url: https://mirarenanovark.github.io
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - wiki
+  - wiki/**
