@@ -15,6 +15,7 @@ C_SRCS = kernel/main.c \
          kernel/core/multiboot2.c \
          kernel/core/pmm.c \
          kernel/core/panic.c \
+         kernel/core/sysmon.c \
          kernel/drivers/vga.c \
          kernel/arch/x86_shared/serial.c \
          kernel/arch/x86_shared/gdt.c \
