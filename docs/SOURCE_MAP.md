@@ -177,6 +177,15 @@ kernel/main.c (kernel_main)
 
 ---
 
+## 7. Detailed Wiki Pages
+
+| Topic | Document |
+|-------|----------|
+| Stage 1 Boot Flow | [wiki/04-internals/BOOT-FLOW.md](wiki/04-internals/BOOT-FLOW.md) |
+| Panic Handler | [wiki/04-internals/PANIC-HANDLER.md](wiki/04-internals/PANIC-HANDLER.md) |
+
+---
+
 ## 6. Educational Walkthrough: Why Each Layer Exists
 
 ### Why a PMM (Physical Memory Manager)?
