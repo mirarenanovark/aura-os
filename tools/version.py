@@ -46,15 +46,16 @@ def cmd_check() -> int:
             rc = fail(f"{m}/MODULE_VERSION missing/empty")
         elif not SEMVER.match(mv):
             rc = fail(f"{m}/MODULE_VERSION '{mv}' is not semver")
-    # any commit touching a module must bump that module (check last commit)
+    # any commit touching a module must bump that module — EXCEPT pure release commits
+    # (VERSION/CHANGELOG/MODULE_VERSION bookkeeping only, no feature content)
     changed = git("diff", "--name-only", "HEAD~1", "HEAD").splitlines()
+    bookkeeping = {"VERSION", "docs/CHANGELOG.md"}
+    feature_changes = [c for c in changed if c not in bookkeeping and not c.endswith("MODULE_VERSION")]
     touched = {c.split("/")[0] for c in changed if c.split("/")[0] in MODULES}
     bumped = {c.split("/")[0] for c in changed if c.endswith("MODULE_VERSION")}
-    for m in touched - bumped:
-        rc = fail(f"commit changes '{m}/' without bumping {m}/MODULE_VERSION")
-    is_release = any(c == "docs/CHANGELOG.md" for c in changed) or version in git("show", "--stat", "--format=%s", "HEAD")
-    if touched and not is_release and len(touched - bumped) == 0 and not changed:
-        pass  # normal feature commit with proper bumps
+    if feature_changes:
+        for m in touched - bumped:
+            rc = fail(f"commit changes '{m}/' without bumping {m}/MODULE_VERSION")
     print("VERSION GATE OK" if rc == 0 else "see failures above")
     return rc
 
