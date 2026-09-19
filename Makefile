@@ -12,6 +12,7 @@ BUILD_DIR = build
 ISO_DIR = $(BUILD_DIR)/isodir
 
 C_SRCS = kernel/main.c \
+         kernel/core/multiboot2.c \
          kernel/core/pmm.c \
          kernel/arch/x86_shared/serial.c \
          kernel/arch/x86_shared/gdt.c \

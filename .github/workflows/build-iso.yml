@@ -1,0 +1,50 @@
+name: Build Bootable ISO & Release Asset
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release/Build Tag (e.g. v0.1.0-alpha or sprint1-boot)'
+        required: false
+        default: 'latest-dev'
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install Freestanding OS Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc-multilib xorriso grub-pc-bin grub-common qemu-system-x86 nasm
+
+      - name: Run Host Unit Tests (PMM Memory Matrix)
+        run: |
+          make test
+
+      - name: Build AuraOS Kernel ELF & Bootable ISO
+        run: |
+          make all
+
+      - name: Verify Headless QEMU Boot & Serial Diagnostics
+        run: |
+          echo "Starting QEMU serial boot verification..."
+          timeout 15 qemu-system-x86_64 -cdrom build/auraos.iso -nographic -no-reboot -serial mon:stdio > /tmp/boot.log 2>&1 || true
+          cat /tmp/boot.log
+          grep "AuraOS Boot Diagnostics" /tmp/boot.log
+          grep "GDT loaded" /tmp/boot.log
+          grep "IDT loaded" /tmp/boot.log
+          grep "Timer alive" /tmp/boot.log
+
+      - name: Upload Bootable ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: auraos-${{ github.event.inputs.release_tag || github.ref_name }}.iso
+          path: build/auraos.iso
+          retention-days: 14
+          if-no-files-found: error
