@@ -16,6 +16,75 @@ title: System Architecture & Developer Wiki
   </div>
 </div>
 
+## 🚦 Project Status & Milestones
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0 32px 0;">
+  <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); padding: 16px; border-radius: 8px;">
+    <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Current Phase</div>
+    <div style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin: 4px 0;">Phase 1: Boot Bringup</div>
+    <div style="font-size: 0.85rem; color: #cbd5e1;">Limine x86_64 & Serial Console</div>
+  </div>
+  <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(16, 185, 129, 0.3); padding: 16px; border-radius: 8px;">
+    <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Specifications</div>
+    <div style="font-size: 1.25rem; font-weight: 800; color: #10b981; margin: 4px 0;">17 / 17 PRDs Complete</div>
+    <div style="font-size: 0.85rem; color: #cbd5e1;">Frozen Wire & Syscall ABIs</div>
+  </div>
+  <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); padding: 16px; border-radius: 8px;">
+    <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Architecture Review</div>
+    <div style="font-size: 1.25rem; font-weight: 800; color: #f1f5f9; margin: 4px 0;">Audited by Astra</div>
+    <div style="font-size: 0.85rem; color: #cbd5e1;">Adversarial Red-Team Passed</div>
+  </div>
+</div>
+
+---
+
+## 🗺️ 6-Phase Engineering Roadmap
+
+```
+Phase 1: Bootloader & Platform Bring-Up  [IN PROGRESS]
+  ├── [x] Limine x86_64 boot protocol configuration
+  ├── [x] Higher-half linker script & assembly entry stub
+  ├── [x] UART 16550 serial console logger (COM1)
+  └── [ ] GDT, IDT exception handlers & QEMU automated boot test
+        │
+        ▼
+Phase 2: Memory, Interrupts & Capability Handles
+  ├── [ ] Physical Page Bitmap Allocator (PMM)
+  ├── [ ] 4-Level PML4 Virtual Memory Paging (VMM)
+  ├── [ ] Per-process Capability Object Table (aura_handle_t)
+  └── [ ] Round-robin preemptive scheduler & Ring-3 user mode
+        │
+        ▼
+Phase 3: Filesystem, Initramfs & In-OS TCC Compiler
+  ├── [ ] Virtual File System (VFS) & read-only boot initramfs
+  ├── [ ] Bounded dynamic RAM filesystem (/tmp, /home)
+  ├── [ ] Interactive CLI Shell (aura-sh)
+  └── [ ] Port TinyCC (TCC) to compile C code directly inside the OS
+        │
+        ▼
+Phase 4: Frosted Glass Compositor & Desktop Shell
+  ├── [ ] Userspace Window Server (aura-wm) with shm backbuffers
+  ├── [ ] Dual Kawase 4x pyramid blur engine (SSE2/AVX2/NEON)
+  ├── [ ] libaura-ui zero-overhead widget toolkit
+  └── [ ] Desktop shell: taskbar, start menu, draggable windows
+        │
+        ▼
+Phase 5: VirtIO-GPU, AuraAudio & AI Coding Studio
+  ├── [ ] VirtIO-GPU 2D scanout acceleration (QEMU/VMware)
+  ├── [ ] AuraAudio real-time mixer (<2.6ms DAW latency + 10-band EQ)
+  ├── [ ] MicroPython runtime integration (<512KB footprint)
+  └── [ ] AI Coding Studio graphical IDE
+        │
+        ▼
+Phase 6: Core Application Suite & Release Hardening
+  ├── [ ] Ubuntu-style Sysmon Task Manager (real-time wave graphs)
+  ├── [ ] Aero Notepad, Word Processor (Write) & Spreadsheet (Calc)
+  ├── [ ] Memory hardening & allocation failure stress tests
+  └── [ ] Dual-flavor release ISOs (x86_64, i686) & ARM images
+```
+
+---
+
 ## 🏛️ System Architecture Overview
 
 ```
