@@ -15,12 +15,14 @@ C_SRCS = kernel/main.c \
          kernel/core/multiboot2.c \
          kernel/core/pmm.c \
          kernel/core/heap.c \
+         kernel/core/slab.c \
          kernel/core/zram.c \
          kernel/core/panic.c \
          kernel/core/sysmon.c \
          kernel/core/dashboard.c \
          kernel/core/menu.c \
          kernel/core/pagefault.c \
+         kernel/core/sched.c \
          kernel/drivers/vga.c \
          kernel/drivers/tui.c \
          kernel/drivers/keyboard.c \
@@ -32,7 +34,8 @@ C_SRCS = kernel/main.c \
 
 ASM_SRCS = boot/multiboot2_header.S \
            boot/entry64.S \
-           kernel/arch/x86_shared/isr.S
+           kernel/arch/x86_shared/isr.S \
+           kernel/arch/x86_shared/switch.S
 
 C_OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 ASM_OBJS = $(patsubst %.S, $(BUILD_DIR)/%.o, $(ASM_SRCS))
@@ -62,7 +65,7 @@ $(BUILD_DIR)/auraos.iso: $(BUILD_DIR)/auraos.elf boot/iso/boot/grub/grub.cfg
 run: $(BUILD_DIR)/auraos.iso
 	qemu-system-x86_64 -cdrom $(BUILD_DIR)/auraos.iso -serial stdio -display none -no-reboot
 
-test: test-pmm test-heap test-zram
+test: test-pmm test-heap test-zram test-slab
 
 test-pmm: tests/test_pmm.c kernel/core/pmm.c
 	@mkdir -p $(BUILD_DIR)
@@ -79,7 +82,12 @@ test-zram: tests/test_zram.c kernel/core/zram.c kernel/core/heap.c kernel/core/p
 	$(HOST_CC) -Ikernel/include tests/test_zram.c kernel/core/zram.c kernel/core/heap.c kernel/core/pmm.c -o $(BUILD_DIR)/test_zram
 	@./$(BUILD_DIR)/test_zram
 
+test-slab: tests/test_slab.c kernel/core/slab.c kernel/core/pmm.c
+	@mkdir -p $(BUILD_DIR)
+	$(HOST_CC) -Ikernel/include tests/test_slab.c kernel/core/slab.c kernel/core/pmm.c -o $(BUILD_DIR)/test_slab
+	@./$(BUILD_DIR)/test_slab
+
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all run test test-pmm test-heap test-zram clean
+.PHONY: all run test test-pmm test-heap test-zram test-slab clean

@@ -13,10 +13,12 @@
  *              - Downstream: x86 I/O bus via inline inb/outb assembly
  *              - Hardware:   COM1 base port 0x3F8, COM2 0x2F8
  *
- * @flow        [AURA_FLOW: SERIAL_IO]
+ * @flow        [AURA_FLOW: SERIAL_IO] [AURA_FLOW: SERIAL_RX]
  *              1. serial_init(): Disables UART IRQ, latches DLAB, programs baud divisor.
  *              2. serial_putc(): Polls LSR bit 5 (THRE) until transmitter empty, writes byte.
- *              3. serial_printf(): Formats integer/string tokens and writes out bytes.
+ *              3. serial_has_char(): Polls LSR bit 0 (DR) for received data.
+ *              4. serial_getc(): Non-blocking read of received byte (returns 0 if empty).
+ *              5. serial_printf(): Formats integer/string tokens and writes out bytes.
  */
 
 #include <aura/serial.h>
@@ -33,6 +35,9 @@
 
 /* LSR bits: transmitter holding register empty is bit 5. */
 #define LSR_THRE        (1u << 5)
+
+/* LSR bit 0: data ready (DR) — byte received and available in receive buffer. */
+#define LSR_DR          (1u << 0)
 
 /* Line control: 8 data bits, no parity, 1 stop, DLAB in bit 7. */
 #define LCR_8N1         0x03u
@@ -78,6 +83,26 @@ void serial_putc(uint16_t port, char c)
         while ((inb((uint16_t)(port + REG_LSR)) & LSR_THRE) == 0)
                 ;
         outb((uint16_t)(port + REG_DATA), (uint8_t)c);
+}
+
+/** [AURA_FLOW: SERIAL_RX]
+ * Check if a byte is waiting in the receive buffer.
+ * Returns non-zero (true) if data ready (LSR bit 0 set), zero (false) if empty. */
+int serial_has_char(uint16_t port)
+{
+        /* [AURA_CONNECTS: UART16550 -> CPU_POLL] */
+        return (inb((uint16_t)(port + REG_LSR)) & LSR_DR) != 0;
+}
+
+/** [AURA_FLOW: SERIAL_RX]
+ * Non-blocking read: returns the received byte, or 0 if no data available.
+ * Caller must check serial_has_char() first for reliable detection. */
+char serial_getc(uint16_t port)
+{
+        /* [AURA_CONNECTS: UART16550 -> CPU_POLL] */
+        if (!serial_has_char(port))
+                return 0;
+        return (char)inb((uint16_t)(port + REG_DATA));
 }
 
 void serial_puts(uint16_t port, const char *s)

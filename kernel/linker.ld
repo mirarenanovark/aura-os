@@ -46,6 +46,9 @@ SECTIONS
         *(.bss*)
     }
 
+    /* [AURA_COMPONENT: LINKER_SCRIPT] Export kernel end for dynamic PMM bitmap placement */
+    _end = .;
+
     /DISCARD/ :
     {
         *(.comment)

@@ -4,7 +4,7 @@
  * @component   SERIAL_UART16550
  * @contract    PRD-07-boot-platform
  * @description Header for the 16550 UART serial driver (COM1 0x3F8).
- *              Polled character/string transmission, formatted printing.
+ *              Polled character/string transmission and non-blocking receive, formatted printing.
  *
  * @connects
  *              - Upstream:   kernel/main.c, kernel/core/panic.c, kernel/core/multiboot2.c
@@ -34,5 +34,13 @@ void serial_puts(uint16_t port, const char *s);
 /* Minimal printf over serial. Supported: %s %d %u %x %c %p and %%.
  * No width, precision, or length modifiers. */
 void serial_printf(uint16_t port, const char *fmt, ...);
+
+/* Non-blocking check: returns non-zero if a byte is waiting in the receive
+ * buffer (LSR bit 0 — Data Ready), zero if empty. */
+int serial_has_char(uint16_t port);
+
+/* Non-blocking read: returns the received byte, or 0 if no data available.
+ * Caller should check serial_has_char() first. */
+char serial_getc(uint16_t port);
 
 #endif /* AURA_SERIAL_H */

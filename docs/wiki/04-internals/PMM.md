@@ -6,7 +6,24 @@ The PMM tracks every 4KB physical RAM frame with a bitmap: `1` bit = used, `0` b
 
 ## Where the Bitmap Lives
 
-`pmm_init(mem_size, bitmap_base)` places the bitmap at a physical address (currently `0x20000`, set by `kernel/main.c`). One bit per 4KB frame means 128MB of RAM needs only a 4KB bitmap.
+`pmm_init(mem_size, bitmap_base)` places the bitmap at the physical address passed by `kernel/main.c`.
+
+The bitmap is **dynamically located** immediately after the kernel image:
+
+```c
+extern uint8_t _end[];                              /* linker.ld: end of BSS */
+uintptr_t bitmap_phys = ((uintptr_t)_end + 4095) & ~4095UL;  /* page-align */
+pmm_init(ram_size, bitmap_phys);
+```
+
+After initialization, all frames from `0` through the end of the bitmap are marked reserved:
+
+```c
+size_t reserved_frames = (bitmap_phys + bitmap_size + 4095) / PAGE_SIZE;
+for (size_t f = 0; f < reserved_frames; f++) pmm_mark_used(f * PAGE_SIZE);
+```
+
+This prevents the PMM from handing out the kernel's own code, data, BSS, or bitmap memory. One bit per 4KB frame means 128MB of RAM needs only a 4KB bitmap.
 
 ## Frame Allocation: 3-Phase Word Scan
 

@@ -45,6 +45,7 @@
 #include <aura/keyboard.h>
 #include <aura/panic.h>
 #include <aura/pagefault.h>
+#include <aura/sched.h>
 
 static struct aura_boot_info boot_info;
 
@@ -117,11 +118,25 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
 
     // [AURA_FLOW: KERNEL_INIT] Step 7: Initialize Physical Memory Manager
     // [AURA_CONNECTS: PMM_BITMAP_ALLOCATOR -> pmm_init]
+    // [AURA_FLOW: PMM_DYNAMIC_BITMAP] Place bitmap immediately after kernel _end (page-aligned)
+    extern uint8_t _end[];
+    uintptr_t bitmap_phys = ((uintptr_t)_end + 4095) & ~4095UL;
     uint64_t ram_size = boot_info.total_memory_bytes ? boot_info.total_memory_bytes : (64ULL * 1024 * 1024);
-    pmm_init((uintptr_t)ram_size, 0x20000);
+    pmm_init((uintptr_t)ram_size, bitmap_phys);
+
+    /* Mark kernel image + bitmap frames as reserved so PMM never hands them out */
+    size_t total_frames = (size_t)ram_size / PAGE_SIZE;
+    size_t bitmap_size  = (total_frames + 7) / 8;
+    size_t reserved_frames = (bitmap_phys + bitmap_size + 4095) / PAGE_SIZE;
+    for (size_t f = 0; f < reserved_frames; f++) {
+        pmm_mark_used(f * PAGE_SIZE);
+    }
+
     serial_printf(COM1, "[OK] PMM ready: %u KB free / %u KB total\n",
                   (uint32_t)(pmm_get_free_memory() / 1024),
                   (uint32_t)(pmm_get_total_memory() / 1024));
+    serial_printf(COM1, "     Bitmap @ 0x%x (after kernel _end 0x%x), %u reserved frames\n",
+                  (uint32_t)bitmap_phys, (uint32_t)(uintptr_t)_end, (uint32_t)reserved_frames);
     vga_printf("[OK] PMM ready: %u MB free / %u MB total\n",
                (uint32_t)(pmm_get_free_memory() / (1024 * 1024)),
                (uint32_t)(pmm_get_total_memory() / (1024 * 1024)));
@@ -182,6 +197,16 @@ void kernel_main(uint64_t mbi_addr, uint64_t magic) {
         while (keyboard_has_key()) {
             char c = keyboard_getchar();
             if (c) {
+                menu_handle_key(c);
+            }
+        }
+
+        /* [AURA_FLOW: SERIAL_RX] Poll serial COM1 input (non-blocking) */
+        if (serial_has_char(COM1)) {
+            char c = serial_getc(COM1);
+            if (c) {
+                /* Translate '\r' to '\n' for serial terminals */
+                if (c == '\r') c = '\n';
                 menu_handle_key(c);
             }
         }
