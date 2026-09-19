@@ -8,3 +8,4 @@ build/
 *.so
 .DS_Store
 *.swp
+testing
